@@ -1,0 +1,73 @@
+.headerimg {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 300px;
+  }
+
+  .headerimg img {
+    width: 100%;
+    height: 1080px;
+    margin: -30% 0 0 0;
+  }
+
+  .myname {
+    position: absolute;
+    color: white;
+    top: 70%;
+    left: 2%;
+    font-size: 80px;
+    font-family: "Heebo";
+  }
+
+.navigation{
+  position: relative;
+  margin-left: 3%;
+}
+
+  .btn {
+    float: left;
+    width: 120px;
+    height: 50px;
+    text-align: center;
+    border: none;
+    background-color: rgb(255, 94, 0);
+    color: white;
+    box-shadow: inset 0 0 0 0 #ffffff;
+    transition: ease-out 0.3s;
+    outline: none;
+    font-family: "Heebo";
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .btn:hover {
+    box-shadow: inset 120px 0 0 0 #ffffff;
+    cursor: pointer;
+    color: rgb(255, 94, 0);
+    font-weight: 500;
+  }
+
+  .github {
+    float: inline-end;
+    height: 30px;
+    margin-left: 63%;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+
+  .email {
+    float: inline-end;
+    height: 30px;
+    margin-left: 0.5%;
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
+
+.content {
+  float: bottom;
+  margin: 0px 0px 300px 0px;
+  background-color: rgb(255, 107, 21);
+  width: 100%;
+  height: 700px;
+}
