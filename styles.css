@@ -27,7 +27,7 @@
 
   .btn {
     float: left;
-    width: 120px;
+    width: 130px;
     height: 50px;
     text-align: center;
     border: none;
@@ -51,15 +51,7 @@
   .github {
     float: inline-end;
     height: 30px;
-    margin-left: 63%;
-    margin-top: 8px;
-    margin-bottom: 8px;
-  }
-
-  .email {
-    float: inline-end;
-    height: 30px;
-    margin-left: 0.5%;
+    margin-left: 56%;
     margin-top: 8px;
     margin-bottom: 8px;
   }
