@@ -27,7 +27,7 @@
 
   .btn {
     float: left;
-    width: 130px;
+    width: 200px;
     height: 50px;
     text-align: center;
     border: none;
@@ -42,7 +42,7 @@
   }
 
   .btn:hover {
-    box-shadow: inset 120px 0 0 0 #ffffff;
+    box-shadow: inset 200px 0 0 0 #ffffff;
     cursor: pointer;
     color: rgb(255, 94, 0);
     font-weight: 500;
@@ -51,15 +51,55 @@
   .github {
     float: inline-end;
     height: 30px;
-    margin-left: 56%;
+    margin-left: 37%;
     margin-top: 8px;
     margin-bottom: 8px;
   }
 
-.content {
-  float: bottom;
-  margin: 0px 0px 300px 0px;
+.contentleft {
+  position: absolute;
+  margin-bottom: 300px;
+  margin-left: 2%;
   background-color: rgb(255, 107, 21);
-  width: 100%;
+  width: 60%;
+  height: 700px;
+}
+
+  .title {
+    font-family: "Heebo";
+    font-size: 60px;
+    line-height: 0px;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .subheader{
+    margin-left: 2%;
+    font-family: "Heebo";
+    line-height: 30px;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    text-align: left;
+  }
+
+  .text{
+    margin-left: 4%;
+    font-family: "Heebo";
+    line-height: 5px;
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    text-align: left;
+  }
+  
+.contentright {
+  position: absolute;
+  margin-bottom: 300px;
+  margin-left: 64%;
+  background-color: rgb(255, 107, 21);
+  width: 34%;
   height: 700px;
 }
