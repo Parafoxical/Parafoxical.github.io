@@ -84,13 +84,14 @@
   }
 
 .contentleft {
-  display: block;
   position: absolute;
   margin-bottom: 300px;
   margin-left: 2%;
   background-color: rgb(255, 107, 21);
   width: 60%;
   height: 700px;
+  align-items: center;
+  justify-content: center;
 }
 
   .title {
@@ -124,7 +125,6 @@
   }
   
 .contentright {
-  display: block;
   position: absolute;
   margin-bottom: 300px;
   margin-left: 64%;
@@ -132,3 +132,18 @@
   width: 34%;
   height: 700px;
 }
+
+.fighter { 
+  position: absolute;
+  width: 100%;
+  align-items: center;
+  justify-content: center; 
+}
+
+  .health {
+    position: absolute;
+    display: flex; 
+    width: 100%; 
+    align-items: center;
+    justify-content: center;
+  }
