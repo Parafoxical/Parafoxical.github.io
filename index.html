@@ -1409,7 +1409,10 @@ document.querySelectorAll('.navb').forEach(function(nb){
   if(en.classList.contains('gz')||en.id.indexOf('e-')!==0)return;
   if(en.querySelector('.gaptag'))return;
   var h=en.querySelector('h4');if(!h)return;
-  var t=h.cloneNode(true),g=t.querySelector('.gaptag');if(g)g.remove();
+  /* the heading also carries chips — the kind tag and the gap tag — and they
+     are not part of the term's name */
+  var t=h.cloneNode(true);
+  t.querySelectorAll('.gaptag,.tag').forEach(function(n){n.remove();});
   items.push({id:en.id,title:t.textContent.trim()});});
  if(!items.length)return;
  var b=nb.querySelector('b'),num=b?b.textContent.trim():'',title=nb.textContent.trim();
