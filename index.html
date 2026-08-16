@@ -91,7 +91,13 @@ border-radius:6px;padding:13px 15px;box-shadow:0 6px 22px rgba(0,0,0,.13);displa
  body.testing .conceal{display:block!important}body.testing .cue{display:none!important}}
 
 /* ---------- palette, light and dark ---------- */
-:root{color-scheme:light;--ok:#2E9E63;--mid:#C8901A;--bad:#C0453B}
+:root{color-scheme:light;--ok:#2E9E63;--mid:#C8901A;--bad:#C0453B;
+ /* the binder's pages, each a different sheet of paper */
+ --pg-notes:#FBF5E3;   --pg-notes-ink:#8A6A16;
+ --pg-diagram:#FBEBE8; --pg-diagram-ink:#9E4034;
+ --pg-key:#E9F0F9;     --pg-key-ink:#2C5C8E;
+ --rule:#D9D2BB;       --paper-ink:#1B1710;
+ --pg-btn:rgba(255,255,255,.62);--dg-fill:#FFFFFF}
 
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){
  color-scheme:dark;
@@ -170,38 +176,7 @@ body.testing .hl-trap,body.testing .hl-val{
   background:none;color:inherit;font-weight:inherit;font-family:inherit;font-size:inherit;
   padding:0}   /* the padding would leave visible gaps in the prose */
 
-/* ---------- the key, as a sticky note in the left margin ---------- */
-.hk-tab{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:80;
- writing-mode:vertical-rl;font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.09em;
- text-transform:uppercase;background:var(--card);color:var(--ink2);border:1px solid var(--line);
- border-left:0;border-radius:0 8px 8px 0;padding:15px 8px;cursor:pointer;box-shadow:0 3px 14px rgba(0,0,0,.1)}
-.hk-tab:hover{color:var(--ink);border-color:var(--ink3)}
-body.hk-open .hk-tab{display:none}
-
-.hk{position:fixed;left:14px;top:118px;width:206px;z-index:79;display:none;
- background:var(--gold-bg);border:1px solid var(--line);border-left:4px solid var(--gold);
- border-radius:4px;padding:13px 14px 14px;box-shadow:0 5px 20px rgba(0,0,0,.12)}
-body.hk-open .hk{display:block}
-.hk h5{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:17px;margin:0 0 9px;
- padding-right:16px;color:var(--ink)}
-.hk .hk-x{position:absolute;top:7px;right:8px;background:none;border:0;font-size:17px;line-height:1;
- color:var(--ink3);cursor:pointer;padding:0 2px}
-.hk .hk-x:hover{color:var(--ink)}
-.hk dl{margin:0}
-.hk dt{margin-bottom:2px}
-.hk dd{margin:0 0 10px;font-size:11.5px;line-height:1.42;color:var(--ink2)}
-.hk dd:last-child{margin-bottom:0}
-.hk .note{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;
- text-transform:uppercase;color:var(--ink3);margin-top:11px;padding-top:9px;border-top:1px dotted var(--line)}
-
-/* nothing to key while the highlights are switched off */
-body.testing .hk-tab,body.testing.hk-open .hk{display:none}
-
-/* the margin is only wide enough for it on a big screen; below that it
-   floats over the text, which is why it closes */
-@media(max-width:1240px){.hk{top:auto;bottom:16px}}
-@media(max-width:620px){.hk{left:8px;right:8px;width:auto}.hk-tab{padding:12px 7px;font-size:11px}}
-@media print{.hk,.hk-tab{display:none!important}}
+/* the key itself now lives as a page in the binder — see binder.css */
 
 /* ---------- checklist drawer ---------- */
 .cl-tab{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:80;
@@ -403,6 +378,166 @@ body.testing .revealed.tr .gl{pointer-events:none;border-bottom:0}
 .gnum{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink3);white-space:nowrap}
 
 .gnone{font-size:14.5px;color:var(--ink3);padding:18px 2px}
+
+/* ---------- the binder ----------
+   A panel on the left with divider tabs down its right edge. Closed, the
+   panel sits off-screen and only the tabs show at the edge of the window.
+   Open, it pushes the page across rather than covering it. */
+:root{--bn-w:min(46vw,720px);--line-h:28px}
+
+.bn{position:fixed;left:0;top:0;height:100%;width:var(--bn-w);z-index:95;
+ background:var(--pg-notes);border-right:1px solid var(--line);
+ transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+ display:flex;flex-direction:column}
+body.bn-open .bn{transform:none}
+body{transition:padding-left .3s cubic-bezier(.4,0,.2,1)}
+body.bn-open{padding-left:var(--bn-w)}
+@media(prefers-reduced-motion:reduce){.bn,body{transition:none}}
+
+/* the divider tabs: flush to the top, stacked touching, cut from the same
+   paper as the page behind them. The shading stays inside the tab so nothing
+   spills onto the page. */
+.bn-tabs{position:absolute;left:100%;top:0;display:flex;flex-direction:column;z-index:2}
+.bn-tab{writing-mode:vertical-rl;font-family:"IBM Plex Mono",monospace;font-size:11.5px;
+ letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border:0;
+ border-radius:0 9px 9px 0;width:36px;padding:17px 0;text-align:center}
+.bn-tab[data-p=notes]{background:var(--pg-notes);color:var(--pg-notes-ink)}
+.bn-tab[data-p=diagram]{background:var(--pg-diagram);color:var(--pg-diagram-ink)}
+.bn-tab[data-p=key]{background:var(--pg-key);color:var(--pg-key-ink)}
+.bn-tab[aria-selected=true]{font-weight:500}
+
+.bn-tools{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:5px;
+ padding:10px 16px;border:0}
+.bn-tools::after{content:"";position:absolute;left:16px;right:46px;bottom:0;
+ border-bottom:1px solid rgba(128,128,128,.3)}
+.bn-tools button,.bn-tools select{font-family:"IBM Plex Mono",monospace;font-size:11px;
+ background:var(--card);color:var(--ink2);border:1px solid var(--line);border-radius:999px;
+ padding:5px 11px;cursor:pointer}
+.bn-tools button:hover,.bn-tools select:hover{border-color:var(--ink3);color:var(--ink)}
+.bn-tools button[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.bn-tools .sp{margin-left:auto;font-size:11px;color:var(--ink3)}
+.bn-pages{flex:1;min-height:0;position:relative}
+.bn-page{position:absolute;inset:0;display:none;flex-direction:column;
+ --ink:var(--paper-ink);--ink2:#5C5445;--ink3:#8E8676;--line:rgba(0,0,0,.16);
+ --card:rgba(255,255,255,.6);--paper:#FFF;color:var(--paper-ink);
+ color-scheme:light}   /* the paper keeps light scrollbars in dark mode */
+.bn-page.on{display:flex}
+.bn-page[data-p=notes]{background:var(--pg-notes)}
+.bn-page[data-p=diagram]{background:var(--pg-diagram)}
+.bn-tools{background:transparent}
+.bn-tools button,.bn-tools select{background:var(--pg-btn);border-color:rgba(128,128,128,.3)}
+
+/* ---------- notes: a sheet of lined paper ---------- */
+.nt-body{position:relative;flex:1;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;
+ outline:none;overflow-wrap:break-word;padding:6px 30px 120px;color:var(--paper-ink);
+ font-size:15.5px;line-height:var(--line-h);
+ background-image:repeating-linear-gradient(to bottom,
+  transparent 0,transparent calc(var(--line-h) - 1px),
+  var(--rule) calc(var(--line-h) - 1px),var(--rule) var(--line-h));
+ background-origin:content-box;background-clip:content-box;
+ background-attachment:local}
+.nt-body:empty::before{content:attr(data-ph);color:var(--ink3)}
+.nt-body>*{margin:0}
+.nt-fig{position:relative;display:inline-block;line-height:0;margin:0}
+.nt-fig[data-align=left]{float:left;margin:0 18px 0 0}
+.nt-fig[data-align=right]{float:right;margin:0 0 0 18px}
+.nt-fig[data-align=center]{display:block;float:none;clear:both;
+ width:fit-content;margin-left:auto;margin-right:auto}
+.nt-fig{background:var(--pg-notes)}   /* hides the ruling behind the picture only */
+.nt-fig img{display:block;max-width:100%;background:transparent;border:0}
+.nt-fig.sel{outline:2px solid var(--blue);outline-offset:3px}
+
+.nt-fig-bar{position:absolute;top:4px;right:4px;display:flex;gap:2px;
+ background:rgba(255,255,255,.92);border:1px solid rgba(0,0,0,.18);
+ border-radius:6px;padding:2px}
+.nt-fig-bar button{width:23px;height:23px;padding:0;line-height:1;font-size:13px;
+ border:0;border-radius:4px;background:none;color:#4B4438;cursor:pointer}
+.nt-fig-bar button:hover{background:rgba(0,0,0,.09);color:#000}
+.nt-fig-bar button[data-f=move]{cursor:grab}
+
+.nt-fig-grip{position:absolute;right:-2px;bottom:-2px;width:13px;height:13px;
+ cursor:nwse-resize;
+ border-right:3px solid #6E6555;border-bottom:3px solid #6E6555;border-radius:0 0 3px 0}
+/* while you drag it, the picture goes see-through where it would land */
+.nt-fig.moving{outline:2px dashed rgba(0,0,0,.25);outline-offset:2px}
+.nt-ghost{position:fixed;z-index:200;pointer-events:none;opacity:.55;
+ background:var(--pg-notes);border:1px solid rgba(0,0,0,.35);border-radius:3px}
+.nt-drop{position:fixed;height:3px;border-radius:2px;background:var(--blue);
+ pointer-events:none;z-index:200}
+
+/* headers sit on their own patch of blank paper — the ruling stops for them
+   and picks up again underneath. Every block is a whole number of lines tall
+   so the text never drifts off the lines. */
+.nt-body h3,.nt-body h4{font-family:"Barlow Condensed",sans-serif;font-weight:600;
+ background:var(--pg-notes);color:var(--paper-ink);margin:0;
+ line-height:var(--line-h);height:calc(var(--line-h) * 2);padding-top:var(--line-h)}
+.nt-body h3,.nt-body h4,.nt-body hr{clear:both}
+.nt-body h3{font-size:23px}
+.nt-body h4{font-size:18px}
+.nt-body hr{border:0;height:var(--line-h);margin:0;background:var(--pg-notes);
+ position:relative}
+.nt-body hr::after{content:"";position:absolute;left:0;right:0;top:50%;
+ border-top:2px solid var(--rule)}
+.nt-body ul,.nt-body ol{margin:0;padding-left:26px}
+.nt-body li{line-height:var(--line-h)}
+.nt-body b,.nt-body strong{font-weight:600}
+.bn-tools .sp.bad{color:var(--bad)}
+.nt-hint{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink3);
+ white-space:nowrap}
+
+/* ---------- diagram ---------- */
+.dg-wrap{position:relative;flex:1;min-height:0;overflow:hidden;margin:0 12px 12px;
+ border:1px solid rgba(0,0,0,.15);border-radius:4px;background:var(--pg-diagram)}
+.dg-wrap svg{display:block;width:100%;height:100%;touch-action:none}
+.dg-wrap.snipping svg{cursor:crosshair}
+.dg-edit{position:absolute;display:none;z-index:4;height:26px;padding:0 6px;
+ font:500 13.5px/1 system-ui,-apple-system,"Segoe UI",sans-serif;text-align:center;
+ color:#12100C;background:#fff;border:2px solid var(--blue);border-radius:4px;outline:none}
+
+/* ---------- the highlight key ----------
+   Not a page of the binder. Its tab grows into a card of the same colour,
+   over the material you are reading; the tab's own label fades out as the
+   key takes its place. */
+.bn-tab[data-p=key]{transition:color .16s ease}
+.bn-tab[data-p=key][aria-selected=true]{color:transparent}
+
+.bn-fly{position:absolute;left:0;display:none;width:302px;max-height:72vh;overflow-y:auto;
+ background:var(--pg-key);border-radius:0 10px 10px 0;
+ box-shadow:3px 4px 18px rgba(0,0,0,.17);
+ padding:16px 18px 18px 32px;z-index:3;
+ --ink:var(--paper-ink);--ink2:#4B5361;--ink3:#7D8693;--line:rgba(0,0,0,.17);
+ color:var(--paper-ink);color-scheme:light}
+.bn-fly.on{display:block}
+.hk-min{position:absolute;left:0;top:0;width:36px;height:var(--tab-h,118px);
+ padding:0;border:0;background:none;cursor:pointer;color:#9AA3AE;
+ display:flex;align-items:center;justify-content:center;border-radius:0 8px 8px 0}
+.hk-min:hover{color:var(--paper-ink);background:rgba(0,0,0,.06)}
+.hk-min svg{display:block;width:11px;height:17px}
+@media(max-width:1000px){.bn-fly{width:min(80vw,302px)}}
+
+.hk dl{margin:0}
+.hk dt{margin-bottom:3px}
+.hk dd{margin:0 0 13px;font-size:13.5px;line-height:1.5;color:var(--ink2)}
+.hk dd:last-of-type{margin-bottom:0}
+.hk .note{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.05em;
+ text-transform:uppercase;margin-top:12px;padding-top:11px;
+ color:var(--ink3);border-top:1px dotted var(--line)}
+/* the key's own swatches, kept out of the test-mode suppression */
+.sw{font-family:inherit;padding:1px 5px;border-radius:3px;font-weight:500}
+.sw-anchor{background:var(--hl-anchor-bg);color:var(--hl-anchor-ink)}
+.sw-a{background:var(--hl-a-bg);color:var(--hl-a-ink);font-weight:400}
+.sw-b{background:var(--hl-b-bg);color:var(--hl-b-ink);font-weight:400}
+.sw-trap{background:var(--hl-trap-bg);color:var(--hl-trap-ink)}
+.sw-val{background:var(--hl-val-bg);color:var(--hl-val-ink);
+ font-family:"IBM Plex Mono",monospace;font-size:.9em}
+
+/* below this there is no room to push anything, so it covers instead */
+@media(max-width:1000px){
+ :root{--bn-w:min(92vw,520px)}
+ body.bn-open{padding-left:0}
+ .bn{box-shadow:6px 0 40px rgba(0,0,0,.4)}
+}
+@media print{.bn{display:none!important}body.bn-open{padding-left:0}}
 </style></head><body>
 <div class="wrapp">
 <div class="top"><div class="navrow"><button class="navb on" data-sheet="map"><b>01</b> The map</button><button class="navb" data-sheet="elicit"><b>02</b> Finding out what's needed</button><button class="navb" data-sheet="process"><b>03</b> Process mapping</button><button class="navb" data-sheet="spec"><b>04</b> Writing it down</button><button class="navb" data-sheet="control"><b>05</b> Keeping control</button><button class="navb" data-sheet="validate"><b>06</b> Checking it works</button><button class="navb" data-sheet="ways"><b>07</b> Ways of working</button><button class="navb" data-sheet="tech"><b>08</b> Technical literacy</button><button class="navb" data-sheet="tools"><b>09</b> Tools and certifications</button><button class="navb" data-sheet="gaps"><b>10</b> The gaps</button><button class="navb" data-sheet="glossary"><b>11</b> Glossary</button></div>
@@ -434,10 +569,6 @@ body.testing .revealed.tr .gl{pointer-events:none;border-bottom:0}
   </div>
  </div>
  <div class="cl-body" id="clBody">
-  <div class="cl-notes">
-   <span class="lbl">Notes</span>
-   <textarea id="clNotes" placeholder="Anything you want to remember, questions to ask, things that still don't click…"></textarea>
-  </div>
   <div id="clSecs"></div>
  </div>
 </aside>
@@ -487,19 +618,29 @@ document.querySelectorAll('.navb').forEach(function(b){b.addEventListener('click
    marks: id -> 'g' green (got it) | 'y' amber (shaky) | 'r' red (no idea) */
 window.BA=(function(){
 var KEY='ba-pack-checklist-v1',
-    st={marks:{},notes:'',shut:{},theme:'',hlkey:-1};   /* hlkey -1 = never chosen */
+    st={marks:{},notes:'',shut:{},theme:'',hlkey:-1,   /* hlkey -1 = never chosen */
+        pages:{},diagram:null,binder:{open:0,tab:'notes'}};
 try{
  var o=JSON.parse(localStorage.getItem(KEY)||'{}');
  st.notes=o.notes||'';st.shut=o.shut||{};st.marks=o.marks||{};
- st.theme=o.theme||'';
+ st.theme=o.theme||'';st.pages=o.pages||{};st.diagram=o.diagram||null;
+ if(o.binder)st.binder=o.binder;
  if(o.hlkey===0||o.hlkey===1)st.hlkey=o.hlkey;
  /* anything ticked before the lights existed was a plain "done" — green */
  if(o.ticks)Object.keys(o.ticks).forEach(function(k){if(!st.marks[k])st.marks[k]='g';});
+ /* the checklist used to carry a small notes box; move it into the binder */
+ if(st.notes&&!st.pages.general){st.pages.general='<div>'+
+  st.notes.replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];})
+  .replace(/\n/g,'</div><div>')+'</div>';}
 }catch(e){}
 
-var subs=[],t=null;
+var subs=[],errs=[],t=null,full=false;
 function save(){clearTimeout(t);t=setTimeout(function(){
- try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}},120);}
+ try{localStorage.setItem(KEY,JSON.stringify(st));if(full){full=false;fire(false);}}
+ catch(e){
+  /* images in notes are the only thing big enough to do this */
+  if(!full){full=true;fire(true);}}},120);}
+function fire(on){errs.forEach(function(f){f(on);});}
 
 return{
  st:st,
@@ -509,7 +650,728 @@ return{
   if(m)st.marks[id]=m;else delete st.marks[id];
   save();subs.forEach(function(f){f(id,m);});},
  clearMarks:function(){st.marks={};save();subs.forEach(function(f){f(null,'');});},
- on:function(f){subs.push(f);}};
+ on:function(f){subs.push(f);},
+ onFull:function(f){errs.push(f);}};
+})();
+
+/* ---------- the binder shell ----------
+   Owns the panel, the divider tabs and which page is showing. The pages
+   themselves are filled in by notes.js, diagram.js and chrome.js. */
+window.BINDER=(function(){
+/* notes and diagram are pages of the binder; the highlight key is a card
+   that flies out to the right, over the material you are reading */
+var PAGES=[['notes','Notes'],['diagram','Diagram']],
+    TABS=PAGES.concat([['key','Highlight key']]);
+
+var bn=document.createElement('aside');
+bn.className='bn';
+bn.setAttribute('aria-label','Study binder');
+/* no title bar and no close button: the tab you are on says which page it
+   is, and clicking it again closes the binder */
+bn.innerHTML='<div class="bn-tabs" role="tablist"></div><div class="bn-pages"></div>';
+
+var tabs=bn.querySelector('.bn-tabs'),
+    host=bn.querySelector('.bn-pages'),
+    body={},tabEl={};
+
+TABS.forEach(function(p){
+ var t=document.createElement('button');
+ t.className='bn-tab';t.dataset.p=p[0];t.textContent=p[1];
+ t.setAttribute('role','tab');t.setAttribute('aria-selected','false');
+ tabs.appendChild(t);tabEl[p[0]]=t;});
+
+PAGES.forEach(function(p){
+ var el=document.createElement('div');
+ el.className='bn-page';el.dataset.p=p[0];
+ host.appendChild(el);
+ body[p[0]]=el;});
+
+var fly=document.createElement('div');
+fly.className='bn-fly';
+fly.setAttribute('aria-label','Highlighting rules');
+tabs.appendChild(fly);
+body.key=fly;
+var flyOpen=false;
+
+document.body.appendChild(bn);
+
+var cur=BA.st.binder.tab==='diagram'?'diagram':'notes';
+function show(name,openIt){
+ if(name)cur=name;
+ if(openIt!==undefined)document.body.classList.toggle('bn-open',!!openIt);
+ var open=document.body.classList.contains('bn-open');
+ PAGES.forEach(function(p){
+  body[p[0]].classList.toggle('on',p[0]===cur);
+  tabEl[p[0]].setAttribute('aria-selected',String(p[0]===cur&&open));});
+ tabEl.key.setAttribute('aria-selected',String(flyOpen));
+ BA.st.binder={open:open?1:0,tab:cur};
+ BA.save();
+ listeners.forEach(function(f){f(cur,open);});}
+
+function flyer(on){
+ flyOpen=on;
+ fly.classList.toggle('on',on);
+ /* line the card up with its own tab */
+ if(on){fly.style.top=tabEl.key.offsetTop+'px';
+  fly.style.setProperty('--tab-h',tabEl.key.offsetHeight+'px');}
+ show(null);}
+
+var listeners=[];
+
+tabs.addEventListener('click',function(e){
+ var t=e.target.closest('.bn-tab');
+ if(!t)return;
+ if(t.dataset.p==='key'){flyer(!flyOpen);return;}
+ var open=document.body.classList.contains('bn-open');
+ /* clicking the tab you are already on closes the binder */
+ show(t.dataset.p,!(open&&t.dataset.p===cur));});
+document.addEventListener('keydown',function(e){
+ if(e.key!=='Escape')return;
+ if(flyOpen){flyer(false);return;}
+ if(document.body.classList.contains('bn-open')&&!bn.contains(document.activeElement))
+  show(null,false);});
+
+show(cur,!!BA.st.binder.open);
+
+return{
+ page:function(n){return body[n];},
+ open:function(n){if(n==='key'){flyer(true);return;}show(n,true);},
+ close:function(){show(null,false);},
+ closeKey:function(){flyer(false);},
+ on:function(f){listeners.push(f);},
+ isOpen:function(){return document.body.classList.contains('bn-open');}};
+})();
+
+/* ---------- the notes page ----------
+   One page of notes per sheet, so what you wrote about process mapping stays
+   with process mapping. Follows whichever sheet you are reading unless you
+   pick another from the dropdown. Holds pasted images and diagram snips. */
+window.NOTES=(function(){
+var host=BINDER.page('notes');
+
+/* the sheets, read off the nav, plus a general page */
+var books=[['general','General']];
+document.querySelectorAll('.navb').forEach(function(nb){
+ var b=nb.querySelector('b'),num=b?b.textContent.trim():'',t=nb.textContent.trim();
+ books.push([nb.getAttribute('data-sheet'),num+' '+(num?t.slice(num.length).trim():t)]);});
+
+host.innerHTML='<div class="bn-tools">'+
+ '<select id="ntPick" aria-label="Which notes page"></select>'+
+ '<button id="ntClear">Clear page</button>'+
+ '<span class="nt-hint"># head &nbsp;## sub &nbsp;- list &nbsp;--- rule</span>'+
+ '<span class="sp" id="ntState"></span></div>'+
+ '<div class="nt-body" id="ntBody" contenteditable="true" spellcheck="true" '+
+ 'aria-label="Your notes" data-ph="Whatever you want to remember. Paste images, or snip a bit of your diagram and it lands here."></div>';
+
+var pick=host.querySelector('#ntPick'),
+    body=host.querySelector('#ntBody'),
+    state=host.querySelector('#ntState'),
+    key='general';
+
+books.forEach(function(b){
+ var o=document.createElement('option');
+ o.value=b[0];o.textContent=b[1];pick.appendChild(o);});
+
+/* ---- only let through the handful of tags a note needs ---- */
+var OK={B:1,I:1,U:1,EM:1,STRONG:1,BR:1,DIV:1,P:1,UL:1,OL:1,LI:1,IMG:1,H3:1,H4:1,
+        HR:1,CODE:1,FIGURE:1},
+    BIN={SCRIPT:1,STYLE:1,IFRAME:1,OBJECT:1,EMBED:1,LINK:1,META:1,TEMPLATE:1};
+function clean(root){
+ [].slice.call(root.querySelectorAll('*')).forEach(function(el){
+  if(!OK[el.tagName]){
+   /* these carry code rather than words — drop what is inside them too */
+   if(BIN[el.tagName]){if(el.parentNode)el.remove();return;}
+   var kids=[].slice.call(el.childNodes);
+   if(el.parentNode)el.replaceWith.apply(el,kids);
+   return;}
+  [].slice.call(el.attributes).forEach(function(a){
+   var n=a.name.toLowerCase();
+   if(el.tagName==='IMG'){
+    if(n==='src'&&/^data:image\//i.test(a.value))return;
+    if((n==='width'||n==='height')&&/^\d{1,5}$/.test(a.value))return;}
+   if(el.tagName==='FIGURE'){
+    if(n==='data-align'&&/^(left|right|center)$/.test(a.value))return;
+    /* the wrapper has to keep its class or it gets wrapped again on reload */
+    if(n==='class'&&a.value==='nt-fig')return;}
+   el.removeAttribute(a.name);});});
+ return root;}
+
+function load(k){
+ key=k;pick.value=k;
+ var wrap=document.createElement('div');
+ wrap.innerHTML=BA.st.pages[k]||'';
+ body.innerHTML=clean(wrap).innerHTML;
+ dressAll();flag('');}
+
+var t=null;
+function bare(){
+ /* the handles and buttons are furniture, not content */
+ var c=body.cloneNode(true);
+ c.querySelectorAll('.nt-fig-bar,.nt-fig-grip').forEach(function(n){n.remove();});
+ c.querySelectorAll('.nt-fig').forEach(function(f){
+  f.className='nt-fig';f.removeAttribute('draggable');});
+ return c.innerHTML;}
+
+function store(){
+ BA.st.pages[key]=bare();
+ BA.save();
+ clearTimeout(t);flag('Saving…');
+ t=setTimeout(function(){flag('Saved');},400);}
+function flag(s){state.textContent=s;}
+
+body.addEventListener('input',store);
+pick.addEventListener('change',function(){load(pick.value);});
+host.querySelector('#ntClear').addEventListener('click',function(){
+ if(!confirm('Clear this page of notes? Only this one.'))return;
+ body.innerHTML='';store();});
+
+/* paste as plain text, except images, which come in as they are */
+body.addEventListener('paste',function(e){
+ var d=e.clipboardData;if(!d)return;
+ var img=[].slice.call(d.items||[]).filter(function(i){
+  return i.type.indexOf('image/')===0;})[0];
+ e.preventDefault();
+ if(img){
+  var f=img.getAsFile(),r=new FileReader();
+  r.onload=function(){insert(r.result);};
+  r.readAsDataURL(f);
+  return;}
+ document.execCommand('insertText',false,d.getData('text/plain'));});
+
+var LINE=28;
+
+/* ---- pictures live in a figure with its own controls ---- */
+function fit(img){
+ var r=(img.naturalWidth/img.naturalHeight)||1.6,
+     room=Math.max(120,body.clientWidth-64),
+     w=Math.min(img.naturalWidth/2,room),          /* snips come out at 2x */
+     h=Math.max(LINE,Math.round((w/r)/LINE)*LINE);
+ if(h*r>room){h=Math.max(LINE,Math.round((room/r)/LINE)*LINE);}
+ img.setAttribute('height',h);
+ img.setAttribute('width',Math.round(h*r));
+ var fig=img.closest('.nt-fig');
+ if(fig&&h*r>room*0.55)fig.dataset.align='center';}
+
+function dress(fig){
+ if(fig.querySelector('.nt-fig-bar'))return;
+ if(!fig.dataset.align)fig.dataset.align='center';
+ var bar=document.createElement('div');
+ bar.className='nt-fig-bar';
+ bar.contentEditable='false';
+ bar.innerHTML='<button data-f="move" title="Drag me somewhere else" '+
+   'aria-label="Move">&#10021;</button>'+
+   '<button data-f="align" title="Left, centred, right" aria-label="Align">&#8596;</button>'+
+   '<button data-f="bin" title="Delete this picture" aria-label="Delete">&#215;</button>';
+ var grip=document.createElement('span');
+ grip.className='nt-fig-grip';grip.contentEditable='false';
+ fig.appendChild(bar);fig.appendChild(grip);
+
+ bar.querySelector('[data-f=move]').addEventListener('pointerdown',function(e){
+  startMove(e,fig);});
+
+ grip.addEventListener('pointerdown',function(e){
+  e.preventDefault();e.stopPropagation();
+  var img=fig.querySelector('img'),
+      r=(img.naturalWidth/img.naturalHeight)||1.6,
+      y0=e.clientY,h0=img.getBoundingClientRect().height,
+      room=Math.max(120,body.clientWidth-64);
+  function mv(ev){
+   var h=Math.max(LINE,Math.round((h0+(ev.clientY-y0))/LINE)*LINE);
+   if(h*r>room)h=Math.max(LINE,Math.round((room/r)/LINE)*LINE);
+   img.setAttribute('height',h);img.setAttribute('width',Math.round(h*r));}
+  function up(){
+   document.removeEventListener('pointermove',mv);
+   document.removeEventListener('pointerup',up);store();}
+  document.addEventListener('pointermove',mv);
+  document.addEventListener('pointerup',up);});}
+
+function dressAll(){
+ /* a figure that lost its class is still a figure */
+ body.querySelectorAll('figure').forEach(function(f){
+  if(!f.querySelector('img')){f.remove();return;}   /* lost its picture */
+  f.classList.add('nt-fig');});
+ body.querySelectorAll('.nt-fig').forEach(dress);
+ /* anything saved before figures existed */
+ body.querySelectorAll('img').forEach(function(i){
+  if(i.closest('.nt-fig'))return;
+  var f=document.createElement('figure');
+  f.className='nt-fig';f.dataset.align='center';
+  i.replaceWith(f);f.appendChild(i);
+  if(!i.getAttribute('height')){
+   if(i.complete)fit(i);else i.addEventListener('load',function(){fit(i);store();},{once:true});}
+  dress(f);});}
+
+var ALIGN={center:'left',left:'right',right:'center'};
+body.addEventListener('click',function(e){
+ var b=e.target.closest('.nt-fig-bar button');
+ if(b){
+  var fig=b.closest('.nt-fig');
+  if(b.dataset.f==='align')fig.dataset.align=ALIGN[fig.dataset.align]||'center';
+  else if(b.dataset.f==='bin')fig.remove();
+  store();return;}
+ body.querySelectorAll('.nt-fig.sel').forEach(function(f){f.classList.remove('sel');});
+ var fg=e.target.closest('.nt-fig');
+ if(fg)fg.classList.add('sel');});
+
+/* ---- moving a picture ----
+   Press and hold the move handle. The picture stays put; a ghost follows the
+   cursor and a blue bar shows the line it will drop onto. Nothing in the notes
+   shifts until you let go, so headings never get shoved about mid-drag. */
+function caretAt(x,y){
+ if(document.caretRangeFromPoint)return document.caretRangeFromPoint(x,y);
+ if(document.caretPositionFromPoint){
+  var p=document.caretPositionFromPoint(x,y);
+  if(!p)return null;
+  var r=document.createRange();r.setStart(p.offsetNode,p.offset);r.collapse(true);
+  return r;}
+ return null;}
+
+function landing(x,y,fig){
+ var r=caretAt(x,y);
+ if(!r)return null;
+ var n=r.startContainer,host=n.nodeType===1?n:n.parentNode;
+ if(!host||!body.contains(host))return null;
+ if(fig.contains(host))return null;                  /* not into itself */
+ /* a picture never lands inside a heading, a rule or another picture */
+ var solid=host.closest&&host.closest('h3,h4,hr,.nt-fig');
+ if(solid&&solid!==fig){
+  var m=solid.getBoundingClientRect();
+  r=document.createRange();
+  if(y>m.top+m.height/2)r.setStartAfter(solid);else r.setStartBefore(solid);
+  r.collapse(true);}
+ return r;}
+
+function markAt(r,bar){
+ var box=r.getBoundingClientRect(),base=body.getBoundingClientRect();
+ if(!box.height){                                     /* collapsed on a block edge */
+  var n=r.startContainer,el=n.nodeType===1?n:n.parentNode;
+  var k=el.getBoundingClientRect();
+  box={top:r.startOffset?k.bottom:k.top};}
+ /* fixed to the viewport, and outside the editable, so it is never content */
+ bar.style.top=Math.max(base.top,Math.min(base.bottom,box.top))+'px';
+ bar.style.left=(base.left+30)+'px';
+ bar.style.width=Math.max(40,body.clientWidth-60)+'px';}
+
+function startMove(e,fig){
+ e.preventDefault();e.stopPropagation();
+ var h=e.currentTarget,img=fig.querySelector('img');
+ if(!img){fig.remove();store();return;}      /* an empty frame is junk */
+ try{h.setPointerCapture(e.pointerId);}catch(err){}
+ fig.classList.add('moving');
+
+ var ghost=document.createElement('img');
+ ghost.className='nt-ghost';ghost.src=img.src;
+ ghost.style.width=Math.min(200,img.getBoundingClientRect().width)+'px';
+ document.body.appendChild(ghost);
+
+ var bar=document.createElement('div');
+ bar.className='nt-drop';
+ document.body.appendChild(bar);
+
+ var target=null;
+ function mv(ev){
+  ghost.style.left=(ev.clientX+14)+'px';
+  ghost.style.top=(ev.clientY+14)+'px';
+  var r=landing(ev.clientX,ev.clientY,fig);
+  if(r){target=r;bar.style.display='block';markAt(r,bar);}
+  else{target=null;bar.style.display='none';}}
+ mv(e);
+
+ function up(){
+  h.removeEventListener('pointermove',mv);
+  h.removeEventListener('pointerup',up);
+  h.removeEventListener('pointercancel',up);
+  ghost.remove();bar.remove();
+  fig.classList.remove('moving');
+  if(target){target.insertNode(fig);body.normalize();}
+  store();}
+ h.addEventListener('pointermove',mv);
+ h.addEventListener('pointerup',up);
+ h.addEventListener('pointercancel',up);}
+
+function insert(dataUrl){
+ body.focus();
+ var fig=document.createElement('figure');
+ fig.className='nt-fig';fig.dataset.align='center';
+ var img=document.createElement('img');
+ fig.appendChild(img);
+ img.addEventListener('load',function(){fit(img);store();},{once:true});
+ img.src=dataUrl;
+ var sel=window.getSelection(),rng=sel&&sel.rangeCount?sel.getRangeAt(0):null;
+ if(rng&&body.contains(rng.commonAncestorContainer)){
+  rng.collapse(false);rng.insertNode(fig);
+  rng.setStartAfter(fig);rng.collapse(true);
+  sel.removeAllRanges();sel.addRange(rng);}
+ else body.appendChild(fig);
+ dress(fig);store();}
+
+/* ---- markdown shortcuts ----
+   Typing "# " at the start of a line turns it into a header, and so on. The
+   header sits on blank paper, so the ruling breaks around it. */
+try{document.execCommand('defaultParagraphSeparator',false,'div');}catch(e){}
+
+function here(){
+ var s=window.getSelection();
+ if(!s||!s.rangeCount||!body.contains(s.anchorNode))return null;
+ var n=s.anchorNode;
+ while(n&&n.parentNode&&n.parentNode!==body)n=n.parentNode;
+ if(!n||n.parentNode!==body)return null;
+ if(n.nodeType===3){                       /* a bare line, not yet in a block */
+  var w=document.createElement('div');
+  n.parentNode.insertBefore(w,n);w.appendChild(n);n=w;}
+ return n;}
+
+function caretIn(el){
+ var r=document.createRange();
+ r.selectNodeContents(el);r.collapse(true);
+ var s=window.getSelection();s.removeAllRanges();s.addRange(r);}
+
+function become(b,tag){
+ var el=document.createElement(tag),host=el;
+ if(tag==='LI'){var ul=document.createElement('ul');ul.appendChild(el);host=ul;}
+ b.replaceWith(host);
+ caretIn(el);
+ return el;}
+
+body.addEventListener('keydown',function(e){
+ var b,txt;
+ if(e.key===' '){
+  b=here();if(!b||b.tagName==='LI')return;
+  txt=b.textContent;
+  var tag={'#':'H3','##':'H4','-':'LI','*':'LI'}[txt];
+  if(!tag)return;
+  e.preventDefault();become(b,tag);store();return;}
+ if(e.key==='Enter'){
+  b=here();if(!b)return;
+  if(b.textContent!=='---')return;
+  e.preventDefault();
+  var hr=document.createElement('hr'),after=document.createElement('div');
+  after.appendChild(document.createElement('br'));
+  b.replaceWith(hr);hr.after(after);
+  caretIn(after);store();}});
+
+/* follow whichever sheet is on screen */
+document.querySelectorAll('.navb').forEach(function(nb){
+ nb.addEventListener('click',function(){
+  var k=nb.getAttribute('data-sheet');
+  if(k!==key&&document.activeElement!==body)load(k);});});
+
+var on=document.querySelector('.navb.on');
+load(on?on.getAttribute('data-sheet'):'general');
+
+/* the notes are the only thing here big enough to fill the browser's store */
+BA.onFull(function(full){
+ flag(full?'Out of space — remove an image':'Saved');
+ state.classList.toggle('bad',full);});
+
+return{
+ add:function(dataUrl){BINDER.open('notes');insert(dataUrl);},
+ pageName:function(){return pick.options[pick.selectedIndex].textContent;}};
+})();
+
+/* ---------- the diagram page ----------
+   A small BPMN-shaped drawing board: tasks, decisions, events, data and
+   labels, joined by arrows. Snip mode drags a box over any part of it and
+   drops that part into your notes as a picture.
+
+   Everything is drawn with literal colours rather than CSS, because the
+   snip rasterises the SVG on its own where the page's stylesheet does not
+   reach. Colours are re-read whenever the theme changes. */
+(function(){
+var host=BINDER.page('diagram'),
+    W=900,H=600,          /* the board is exactly the size of its page */
+    FONT='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+
+var TYPE={
+ task:{label:'Task',h:54,min:120},
+ gateway:{label:'Decision?',h:70,min:110},
+ event:{label:'Start',h:56,min:96},
+ data:{label:'Data',h:54,min:120},
+ note:{label:'Label',h:34,min:60}};
+
+var d=BA.st.diagram||{shapes:[],links:[],seq:1};
+var mode='select',sel=null,link1=null;
+
+host.innerHTML='<div class="bn-tools">'+
+ '<button data-add="task">Task</button>'+
+ '<button data-add="gateway">Decision</button>'+
+ '<button data-add="event">Event</button>'+
+ '<button data-add="data">Data</button>'+
+ '<button data-add="note">Label</button>'+
+ '<button data-mode="link">Connect</button>'+
+ '<button data-mode="snip">Snip</button>'+
+ '<button id="dgDel">Delete</button>'+
+ '<span class="sp" id="dgHint"></span></div>'+
+ '<div class="dg-wrap" id="dgWrap"></div>';
+
+var wrap=host.querySelector('#dgWrap'),hint=host.querySelector('#dgHint');
+var svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+svg.setAttribute('viewBox','0 0 '+W+' '+H);   /* until the page is measured */
+wrap.appendChild(svg);
+
+/* one SVG unit is one screen pixel, and the board is whatever the page is —
+   so there is nothing to scroll and no scrollbars to look at */
+function fit(){
+ var w=wrap.clientWidth,h=wrap.clientHeight;
+ if(w<40||h<40)return false;                 /* the page is hidden */
+ if(w===W&&h===H)return false;
+ W=w;H=h;
+ svg.setAttribute('viewBox','0 0 '+W+' '+H);
+ d.shapes.forEach(function(s){
+  s.x=Math.max(0,Math.min(W-wide(s),s.x));
+  s.y=Math.max(0,Math.min(H-TYPE[s.type].h,s.y));});
+ return true;}
+if(window.ResizeObserver)new ResizeObserver(function(){if(fit())draw();}).observe(wrap);
+
+function C(){
+ var s=getComputedStyle(document.documentElement);
+ var v=function(n,f){return (s.getPropertyValue(n)||f).trim();};
+ /* solid black shapes with white labels — they have to read on cream paper
+    once snipped, and the snip carries no background of its own */
+ return{paper:v('--pg-diagram','#FBEBE8'),ink:'#12100C',label:'#FFFFFF',
+        line:v('--ink3','#858D9B'),pick:v('--blue','#2E6FB7'),soft:'#12100C'};}
+var col=C();
+
+function el(n,a){
+ var e=document.createElementNS('http://www.w3.org/2000/svg',n);
+ for(var k in a)e.setAttribute(k,a[k]);
+ return e;}
+
+function wide(s){
+ var t=TYPE[s.type];
+ return Math.max(t.min,(s.label||'').length*7.6+34);}
+function box(s){return{x:s.x,y:s.y,w:wide(s),h:TYPE[s.type].h};}
+
+/* where a line from the middle of a box towards p leaves the box */
+function edge(b,px,py){
+ var cx=b.x+b.w/2,cy=b.y+b.h/2,dx=px-cx,dy=py-cy;
+ if(!dx&&!dy)return[cx,cy];
+ var sx=dx?b.w/2/Math.abs(dx):1e9,sy=dy?b.h/2/Math.abs(dy):1e9,k=Math.min(sx,sy);
+ return[cx+dx*k,cy+dy*k];}
+
+function draw(){
+ while(svg.firstChild)svg.removeChild(svg.firstChild);
+ var defs=el('defs');
+ var mk=el('marker',{id:'dgArrow',viewBox:'0 0 10 10',refX:9,refY:5,
+  markerWidth:7,markerHeight:7,orient:'auto-start-reverse'});
+ mk.appendChild(el('path',{d:'M0,0 L10,5 L0,10 z',fill:col.ink}));
+ defs.appendChild(mk);svg.appendChild(defs);
+ svg.appendChild(el('rect',{x:0,y:0,width:W,height:H,fill:col.paper,'data-bg':'1'}));
+
+ d.links.forEach(function(l){
+  var a=find(l.from),b=find(l.to);
+  if(!a||!b)return;
+  var ba=box(a),bb=box(b);
+  var p1=edge(ba,bb.x+bb.w/2,bb.y+bb.h/2),p2=edge(bb,ba.x+ba.w/2,ba.y+ba.h/2);
+  var g=el('g',{'data-link':l.id,style:'cursor:pointer'});
+  g.appendChild(el('line',{x1:p1[0],y1:p1[1],x2:p2[0],y2:p2[1],
+   stroke:'transparent','stroke-width':14}));
+  g.appendChild(el('line',{x1:p1[0],y1:p1[1],x2:p2[0],y2:p2[1],
+   stroke:sel===l.id?col.pick:col.ink,'stroke-width':sel===l.id?2.4:1.6,
+   'marker-end':'url(#dgArrow)'}));
+  svg.appendChild(g);});
+
+ d.shapes.forEach(function(s){
+  var b=box(s),on=sel===s.id,st=on?col.pick:col.ink;
+ var sw=on?3:1.4;
+  var g=el('g',{'data-shape':s.id,style:'cursor:move'});
+  var f=s.type==='note'?'none':col.soft;
+  if(s.type==='task')
+   g.appendChild(el('rect',{x:b.x,y:b.y,width:b.w,height:b.h,rx:7,
+    fill:f,stroke:st,'stroke-width':sw}));
+  else if(s.type==='gateway')
+   g.appendChild(el('polygon',{points:[b.x+b.w/2,b.y,b.x+b.w,b.y+b.h/2,
+    b.x+b.w/2,b.y+b.h,b.x,b.y+b.h/2].join(' '),
+    fill:f,stroke:st,'stroke-width':sw}));
+  else if(s.type==='event')
+   g.appendChild(el('ellipse',{cx:b.x+b.w/2,cy:b.y+b.h/2,rx:b.w/2,ry:b.h/2,
+    fill:f,stroke:st,'stroke-width':sw}));
+  else if(s.type==='data')
+   g.appendChild(el('polygon',{points:[b.x+14,b.y,b.x+b.w,b.y,b.x+b.w-14,b.y+b.h,
+    b.x,b.y+b.h].join(' '),fill:f,stroke:st,'stroke-width':sw}));
+  else
+   g.appendChild(el('rect',{x:b.x,y:b.y,width:b.w,height:b.h,fill:'none',
+    stroke:on?col.pick:'none','stroke-width':1.4,'stroke-dasharray':'4 3'}));
+  var t=el('text',{x:b.x+b.w/2,y:b.y+b.h/2,'text-anchor':'middle',
+   'dominant-baseline':'central','font-family':FONT,'font-weight':500,
+   'font-size':s.type==='note'?15:13.5,
+   fill:s.type==='note'?col.ink:col.label});
+  t.textContent=s.label||'';
+  g.appendChild(t);
+  svg.appendChild(g);});}
+
+function find(id){
+ for(var i=0;i<d.shapes.length;i++)if(d.shapes[i].id===id)return d.shapes[i];
+ return null;}
+function store(){BA.st.diagram=d;BA.save();}
+
+/* ---- adding ---- */
+host.querySelectorAll('[data-add]').forEach(function(b){
+ b.addEventListener('click',function(){
+  var type=b.dataset.add;
+  var cols=Math.max(1,Math.floor((W-40)/190)),
+      rows=Math.max(1,Math.floor((H-40)/105)),
+      n=d.shapes.length;
+  var s={id:'s'+(d.seq++),type:type,label:TYPE[type].label,
+   x:24+(n%cols)*190,
+   y:22+(Math.floor(n/cols)%rows)*105};
+  d.shapes.push(s);sel=s.id;store();draw();});});
+
+/* ---- modes ---- */
+function setMode(m){
+ mode=m;
+ host.querySelectorAll('[data-mode]').forEach(function(b){
+  b.setAttribute('aria-pressed',String(b.dataset.mode===m));});
+ /* if you already had a shape picked, that is the one you are joining FROM,
+    so all you have to do next is click where it should point */
+ link1=(m==='link'&&sel&&find(sel))?sel:null;
+ wrap.classList.toggle('snipping',m==='snip');
+ hint.textContent=m==='link'?(link1?'Now click where it points':'Click the shape it starts from')
+   :m==='snip'?'Drag a box to copy it into your notes':'';
+ draw();}
+host.querySelectorAll('[data-mode]').forEach(function(b){
+ b.addEventListener('click',function(){setMode(mode===b.dataset.mode?'select':b.dataset.mode);});});
+
+host.querySelector('#dgDel').addEventListener('click',del);
+function del(){
+ if(!sel)return;
+ d.shapes=d.shapes.filter(function(s){return s.id!==sel;});
+ d.links=d.links.filter(function(l){
+  return l.id!==sel&&l.from!==sel&&l.to!==sel;});
+ sel=null;store();draw();}
+document.addEventListener('keydown',function(e){
+ if(e.key!=='Delete'||!sel||!BINDER.isOpen())return;
+ if(!host.classList.contains('on'))return;      /* another page is showing */
+ var a=document.activeElement;
+ if(a&&(a.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))return;
+ e.preventDefault();del();});
+
+/* ---- pointer ---- */
+function grab(e){
+ /* a pointer can vanish between events; losing capture is not fatal */
+ try{svg.setPointerCapture(e.pointerId);}catch(err){}}
+
+function at(e){
+ var r=svg.getBoundingClientRect();
+ return[(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H];}
+
+var drag=null,snip=null;
+svg.addEventListener('pointerdown',function(e){
+ var p=at(e),g=e.target.closest('[data-shape],[data-link]');
+
+ if(mode==='snip'){
+  snip={x:p[0],y:p[1],x2:p[0],y2:p[1]};
+  grab(e);e.preventDefault();return;}
+
+ if(mode==='link'){
+  if(!g||!g.dataset.shape)return;
+  if(!link1){link1=g.dataset.shape;sel=link1;
+   hint.textContent='Now click where it points';draw();}
+  else if(link1!==g.dataset.shape){
+   d.links.push({id:'l'+(d.seq++),from:link1,to:g.dataset.shape});
+   link1=null;sel=null;
+   hint.textContent='Click the shape it starts from';store();draw();}
+  return;}
+
+ if(!g){sel=null;draw();return;}
+ if(g.dataset.link){sel=g.dataset.link;draw();return;}
+ var s=find(g.dataset.shape);
+ sel=s.id;draw();
+ drag={s:s,dx:p[0]-s.x,dy:p[1]-s.y,x0:e.clientX,y0:e.clientY,moved:false};
+ grab(e);});
+
+svg.addEventListener('pointermove',function(e){
+ if(drag){
+  if(Math.abs(e.clientX-drag.x0)+Math.abs(e.clientY-drag.y0)>4)drag.moved=true;
+  if(!drag.moved)return;
+  var p=at(e);
+  drag.s.x=Math.max(0,Math.min(W-40,p[0]-drag.dx));
+  drag.s.y=Math.max(0,Math.min(H-30,p[1]-drag.dy));
+  draw();return;}
+ if(snip){
+  var q=at(e);snip.x2=q[0];snip.y2=q[1];draw();
+  svg.appendChild(el('rect',{x:Math.min(snip.x,snip.x2),y:Math.min(snip.y,snip.y2),
+   width:Math.abs(snip.x2-snip.x),height:Math.abs(snip.y2-snip.y),
+   fill:'none',stroke:col.pick,'stroke-width':1.6,'stroke-dasharray':'6 4',
+   'data-snipbox':'1'}));}});
+
+svg.addEventListener('pointerup',function(e){
+ if(drag){
+  var was=drag;drag=null;
+  if(!was.moved)edit(was.s);else store();
+  return;}
+ if(snip){
+  var r={x:Math.min(snip.x,snip.x2),y:Math.min(snip.y,snip.y2),
+         w:Math.abs(snip.x2-snip.x),h:Math.abs(snip.y2-snip.y)};
+  snip=null;draw();
+  if(r.w>12&&r.h>12)shoot(r);
+  else hint.textContent='Drag a bigger box';}});
+
+/* ---- snip: rasterise that part of the board ---- */
+function shoot(r){
+ var clone=svg.cloneNode(true);
+ [].slice.call(clone.querySelectorAll('[data-snipbox],[data-bg]')).forEach(function(n){n.remove();});
+ clone.setAttribute('viewBox',[r.x,r.y,r.w,r.h].join(' '));
+ clone.setAttribute('width',r.w);clone.setAttribute('height',r.h);
+ clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+ var src='data:image/svg+xml;charset=utf-8,'+
+   encodeURIComponent(new XMLSerializer().serializeToString(clone));
+ var img=new Image();
+ img.onload=function(){
+  var c=document.createElement('canvas');
+  c.width=Math.round(r.w*2);c.height=Math.round(r.h*2);
+  var x=c.getContext('2d');
+  x.drawImage(img,0,0,c.width,c.height);   /* no fill: keep it transparent */
+  try{NOTES.add(c.toDataURL('image/png'));hint.textContent='Sent to notes';}
+  catch(err){hint.textContent='Could not copy that';}};
+ img.onerror=function(){hint.textContent='Could not copy that';};
+ img.src=src;}
+
+/* ---- renaming, in place ---- */
+var editor=document.createElement('input');
+editor.className='dg-edit';editor.type='text';
+editor.setAttribute('aria-label','Shape label');
+wrap.appendChild(editor);
+var editing=null,before='';
+
+function place(s){
+ var b=box(s);
+ editor.style.left=(b.x+4)+'px';
+ editor.style.top=(b.y+b.h/2-13)+'px';
+ editor.style.width=Math.max(64,b.w-8)+'px';}
+
+function edit(s){
+ editing=s;before=s.label||'';
+ editor.value=before;
+ editor.style.display='block';
+ place(s);
+ editor.focus();editor.select();}
+
+function stopEdit(keep){
+ if(!editing)return;
+ if(!keep)editing.label=before;
+ editor.style.display='none';
+ editing=null;store();draw();}
+
+editor.addEventListener('input',function(){
+ if(!editing)return;
+ editing.label=editor.value;
+ draw();place(editing);});
+editor.addEventListener('keydown',function(e){
+ if(e.key==='Enter'){e.preventDefault();stopEdit(true);}
+ else if(e.key==='Escape'){e.preventDefault();stopEdit(false);}
+ e.stopPropagation();});
+editor.addEventListener('blur',function(){stopEdit(true);});
+
+/* the board is drawn in flat colours, so it has to be redrawn on a theme flip */
+var mq=window.matchMedia('(prefers-color-scheme: dark)');
+function repaint(){col=C();draw();}
+mq.addEventListener('change',repaint);
+new MutationObserver(repaint).observe(document.documentElement,
+ {attributes:true,attributeFilter:['data-theme']});
+
+setMode('select');
+fit();draw();
 })();
 
 /* ---------- checklist drawer ----------
@@ -616,11 +1478,6 @@ wrap.addEventListener('click',function(e){
 BA.on(function(id){
  if(id)paintRow(id);else Object.keys(rows).forEach(paintRow);
  tally();});
-
-/* ---- notes ---- */
-var nt=document.getElementById('clNotes');
-nt.value=BA.st.notes;
-nt.addEventListener('input',function(){BA.st.notes=nt.value;BA.save();});
 
 /* ---- open / close ---- */
 var tab=document.getElementById('clTab'),dr=document.getElementById('clDrawer');
@@ -1013,43 +1870,29 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',func
  if(!BA.st.theme)apply();});
 apply();
 
-/* ---- highlighting key ---- */
+/* ---- highlighting key, as the third page of the binder ---- */
 var KEY=[
- ['hl-anchor','Anchor','The one fragment that rebuilds the whole idea. At most one per card.'],
- ['hl-a','Side A','One half of a pair being told apart. Always shown with its partner.'],
- ['hl-b','Side B','The other half. Same colour every time, down the whole page.'],
- ['hl-trap','Trap','A negation or reversal. Skim past it and the sentence says the opposite.'],
- ['hl-val','Value','A number, a limit, or letters standing for words.']];
+ ['anchor','Anchor','The one fragment that rebuilds the whole idea. At most one per card.'],
+ ['a','Side A','One half of a pair being told apart. Always shown with its partner.'],
+ ['b','Side B','The other half. Same colour every time, down the whole page.'],
+ ['trap','Trap','A negation or reversal. Skim past it and the sentence says the opposite.'],
+ ['val','Value','A number, a limit, or letters standing for words.']];
 
-var tab=document.createElement('button');
-tab.className='hk-tab';
-tab.textContent='Highlights';
-tab.setAttribute('aria-controls','hkPanel');
-tab.setAttribute('aria-expanded','false');
-
-var hk=document.createElement('aside');
-hk.className='hk';hk.id='hkPanel';
-hk.setAttribute('aria-label','Highlighting rules');
-hk.innerHTML='<button class="hk-x" aria-label="Close">&times;</button><h5>Highlighting rules</h5><dl></dl>'+
- '<p class="note">Hidden in test mode — a cue would hand you the answer</p>';
+var hk=document.createElement('div');
+hk.className='hk';
+hk.innerHTML='<button class="hk-min" aria-label="Close the key" title="Close">'+
+ '<svg viewBox="0 0 10 16" aria-hidden="true"><path d="M7.5 1.5 L2.5 8 L7.5 14.5" '+
+ 'fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" '+
+ 'stroke-linejoin="round"/></svg></button>'+
+ '<dl></dl><p class="note">Hidden in test mode — a cue would hand you the answer</p>';
 var dl=hk.querySelector('dl');
 KEY.forEach(function(k){
  var dt=document.createElement('dt');
- dt.innerHTML='<span class="'+k[0]+'">'+k[1]+'</span>';
+ dt.innerHTML='<span class="sw sw-'+k[0]+'">'+k[1]+'</span>';
  var dd=document.createElement('dd');
  dd.textContent=k[2];
  dl.appendChild(dt);dl.appendChild(dd);});
-
-body.appendChild(tab);body.appendChild(hk);
-
-function show(on){
- body.classList.toggle('hk-open',on);
- tab.setAttribute('aria-expanded',String(on));
- BA.st.hlkey=on?1:0;BA.save();}
-tab.addEventListener('click',function(){show(true);});
-hk.querySelector('.hk-x').addEventListener('click',function(){show(false);});
-
-/* until you've chosen, open it only where the margin is genuinely wide enough */
-show(BA.st.hlkey===-1?window.innerWidth>=1320:BA.st.hlkey===1);
+BINDER.page('key').appendChild(hk);
+hk.querySelector('.hk-min').addEventListener('click',function(){BINDER.closeKey();});
 })();
 </script></body></html>
