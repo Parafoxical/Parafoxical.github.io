@@ -441,23 +441,28 @@ body.bn-open{padding-left:var(--bn-w)}
 .nt-fig{position:relative;display:inline-block;line-height:0;margin:0}
 .nt-fig[data-align=left]{float:left;margin:0 18px 0 0}
 .nt-fig[data-align=right]{float:right;margin:0 0 0 18px}
-.nt-fig[data-align=center]{display:block;float:none;clear:both;
- width:fit-content;margin-left:auto;margin-right:auto}
+.nt-fig[data-align=center]{display:block;float:none;clear:both;width:auto;margin:0}
+.nt-fig[data-align=center] img{margin-left:auto;margin-right:auto}
+/* the handles follow the picture, not the full-width frame */
+.nt-fig[data-align=center] .nt-fig-bar{right:calc(50% - var(--iw,0px)/2 + 4px)}
+.nt-fig[data-align=center] .nt-fig-grip{right:calc(50% - var(--iw,0px)/2 - 2px)}
 .nt-fig{background:var(--pg-notes)}   /* hides the ruling behind the picture only */
 .nt-fig img{display:block;max-width:100%;background:transparent;border:0}
 .nt-fig.sel{outline:2px solid var(--blue);outline-offset:3px}
 
-.nt-fig-bar{position:absolute;top:4px;right:4px;display:flex;gap:2px;
+.nt-fig-bar{position:absolute;top:4px;right:4px;display:none;gap:2px;
  background:rgba(255,255,255,.92);border:1px solid rgba(0,0,0,.18);
  border-radius:6px;padding:2px}
 .nt-fig-bar button{width:23px;height:23px;padding:0;line-height:1;font-size:13px;
  border:0;border-radius:4px;background:none;color:#4B4438;cursor:pointer}
 .nt-fig-bar button:hover{background:rgba(0,0,0,.09);color:#000}
 .nt-fig-bar button[data-f=move]{cursor:grab}
+.nt-fig.sel .nt-fig-bar{display:flex}
 
 .nt-fig-grip{position:absolute;right:-2px;bottom:-2px;width:13px;height:13px;
- cursor:nwse-resize;
+ display:none;cursor:nwse-resize;
  border-right:3px solid #6E6555;border-bottom:3px solid #6E6555;border-radius:0 0 3px 0}
+.nt-fig.sel .nt-fig-grip{display:block}
 /* while you drag it, the picture goes see-through where it would land */
 .nt-fig.moving{outline:2px dashed rgba(0,0,0,.25);outline-offset:2px}
 .nt-ghost{position:fixed;z-index:200;pointer-events:none;opacity:.55;
@@ -850,11 +855,19 @@ function fit(img){
  img.setAttribute('height',h);
  img.setAttribute('width',Math.round(h*r));
  var fig=img.closest('.nt-fig');
- if(fig&&h*r>room*0.55)fig.dataset.align='center';}
+ if(fig&&h*r>room*0.55)fig.dataset.align='center';
+ mark(img);}
+
+/* centred pictures sit in a full-width frame, so the handles are placed from
+   the picture's own width rather than the frame's */
+function mark(img){
+ var f=img.closest('.nt-fig');
+ if(f)f.style.setProperty('--iw',(img.getAttribute('width')||img.width||0)+'px');}
 
 function dress(fig){
  if(fig.querySelector('.nt-fig-bar'))return;
  if(!fig.dataset.align)fig.dataset.align='center';
+ var pic=fig.querySelector('img');if(pic)mark(pic);
  var bar=document.createElement('div');
  bar.className='nt-fig-bar';
  bar.contentEditable='false';
@@ -878,7 +891,7 @@ function dress(fig){
   function mv(ev){
    var h=Math.max(LINE,Math.round((h0+(ev.clientY-y0))/LINE)*LINE);
    if(h*r>room)h=Math.max(LINE,Math.round((room/r)/LINE)*LINE);
-   img.setAttribute('height',h);img.setAttribute('width',Math.round(h*r));}
+   img.setAttribute('height',h);img.setAttribute('width',Math.round(h*r));mark(img);}
   function up(){
    document.removeEventListener('pointermove',mv);
    document.removeEventListener('pointerup',up);store();}
