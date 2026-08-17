@@ -506,7 +506,7 @@ body.bn-open{padding-left:var(--bn-w)}
 .bn-tab[data-p=key]{transition:color .16s ease}
 .bn-tab[data-p=key][aria-selected=true]{color:transparent}
 
-.bn-fly{position:absolute;left:0;display:none;width:302px;max-height:72vh;overflow-y:auto;
+.bn-fly{position:fixed;display:none;width:302px;max-height:72vh;overflow-y:auto;
  background:var(--pg-key);border-radius:0 10px 10px 0;
  box-shadow:3px 4px 18px rgba(0,0,0,.17);
  padding:16px 18px 18px 32px;z-index:3;
@@ -543,6 +543,80 @@ body.bn-open{padding-left:var(--bn-w)}
  .bn{box-shadow:6px 0 40px rgba(0,0,0,.4)}
 }
 @media print{.bn{display:none!important}body.bn-open{padding-left:0}}
+
+/* ---------- phones ----------
+   Side tabs don't work on a narrow screen: they sit on top of the sticky nav
+   and eat the width the text needs. Below 780px they are replaced by a bar
+   along the bottom, and every panel comes up from the bottom instead of in
+   from the side. Nothing above 780px changes. */
+
+.mb{display:none}
+
+/* the key card is a page-level element now, so it needs to clear the panels */
+.bn-fly{z-index:110}
+
+@media(max-width:780px){
+
+ .mb{position:fixed;left:0;right:0;bottom:0;z-index:130;display:flex;gap:2px;
+  background:var(--card);border-top:1px solid var(--line);
+  padding:4px 3px calc(4px + env(safe-area-inset-bottom,0px));
+  box-shadow:0 -3px 16px rgba(0,0,0,.16)}
+ .mb button{flex:1;min-width:0;background:none;border:0;cursor:pointer;
+  padding:8px 2px 7px;border-radius:9px;line-height:1.25;color:var(--ink3);
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;
+  text-transform:uppercase}
+ .mb button b{display:block;font-weight:500;font-size:10.5px;opacity:.75}
+ .mb button[aria-selected=true]{color:var(--ink)}
+ .mb button[data-m=notes][aria-selected=true]{background:var(--pg-notes);color:var(--pg-notes-ink)}
+ .mb button[data-m=diagram][aria-selected=true]{background:var(--pg-diagram);color:var(--pg-diagram-ink)}
+ .mb button[data-m=key][aria-selected=true]{background:var(--pg-key);color:var(--pg-key-ink)}
+ .mb button[data-m=checklist][aria-selected=true]{background:var(--ink);color:var(--paper)}
+
+ /* room for the bar, and the side tabs are gone */
+ body{padding-bottom:60px}
+ body.bn-open{padding-left:0}
+ .bn-tabs,.cl-tab{display:none}
+
+ /* every panel becomes a sheet that slides up */
+ .bn,.cl-drawer,.bn-fly{
+  left:0;right:0;top:auto;bottom:0;width:auto;max-width:none;
+  height:80vh;max-height:80vh;padding-top:15px;
+  /* the bar floats over the sheet, so keep its last rows clear of it */
+  padding-bottom:calc(54px + env(safe-area-inset-bottom,0px));
+  border:0;border-top:1px solid var(--line);border-radius:15px 15px 0 0;
+  box-shadow:0 -8px 30px rgba(0,0,0,.28);
+  transform:translateY(100%);
+  transition:transform .28s cubic-bezier(.4,0,.2,1),visibility 0s linear .28s}
+ body.bn-open .bn,body.cl-open .cl-drawer{transform:none}
+ .bn-fly{display:block;visibility:hidden;overflow-y:auto;
+  padding-left:18px;padding-right:18px;padding-top:22px}
+ .bn-fly.on{transform:none;visibility:visible;transition:transform .28s cubic-bezier(.4,0,.2,1)}
+ body.cl-open .cl-drawer{visibility:visible;transition:transform .28s cubic-bezier(.4,0,.2,1)}
+
+ /* the grab handle every sheet gets */
+ .bn::before,.cl-drawer::before,.bn-fly::before{content:"";position:absolute;
+  top:6px;left:50%;transform:translateX(-50%);width:40px;height:4px;
+  border-radius:99px;background:rgba(128,128,128,.45);z-index:6}
+
+ /* one scrim behind whichever sheet is up */
+ body.sheet-open .cl-scrim{opacity:1;pointer-events:auto}
+
+ /* the key closes from the bar, so its corner chevron is redundant */
+ .hk-min{display:none}
+ .bn-fly .hk dl{max-width:none}
+
+ /* the nav strip keeps its own scroll, clear of everything */
+ .navrow{padding-bottom:12px}
+
+ /* the notes page is narrower, so give the ruling less margin */
+ .nt-body{padding-left:18px;padding-right:18px}
+ .nt-body h3{font-size:21px}
+}
+
+@media(max-width:780px) and (prefers-reduced-motion:reduce){
+ .bn,.cl-drawer,.bn-fly{transition:none}
+}
+@media print{.mb{display:none!important}body{padding-bottom:0}}
 </style></head><body>
 <div class="wrapp">
 <div class="top"><div class="navrow"><button class="navb on" data-sheet="intro"><b>01</b> What a business analyst does</button><button class="navb" data-sheet="discover"><b>02</b> Discover</button><button class="navb" data-sheet="analyse"><b>03</b> Analyse</button><button class="navb" data-sheet="specify"><b>04</b> Specify</button><button class="navb" data-sheet="validatep"><b>05</b> Validate</button><button class="navb" data-sheet="control"><b>06</b> Keeping control</button><button class="navb" data-sheet="ways"><b>07</b> Ways of working</button><button class="navb" data-sheet="tech"><b>08</b> Technical literacy</button><button class="navb" data-sheet="tools"><b>09</b> Tools and certifications</button><button class="navb" data-sheet="gaps"><b>10</b> The gaps</button><button class="navb" data-sheet="glossary"><b>11</b> Glossary</button></div>
@@ -705,7 +779,9 @@ PAGES.forEach(function(p){
 var fly=document.createElement('div');
 fly.className='bn-fly';
 fly.setAttribute('aria-label','Highlighting rules');
-tabs.appendChild(fly);
+/* on the page itself, not inside .bn — a transformed ancestor would drag a
+   fixed-position child around with it, which breaks the mobile bottom sheet */
+document.body.appendChild(fly);
 body.key=fly;
 var flyOpen=false;
 
@@ -727,9 +803,15 @@ function show(name,openIt){
 function flyer(on){
  flyOpen=on;
  fly.classList.toggle('on',on);
- /* line the card up with its own tab */
- if(on){fly.style.top=tabEl.key.offsetTop+'px';
-  fly.style.setProperty('--tab-h',tabEl.key.offsetHeight+'px');}
+ /* line the card up with its own tab — but on a phone it is a bottom sheet
+    and positions itself from CSS */
+ if(on){
+  if(window.matchMedia('(max-width:780px)').matches){
+   fly.style.top='';fly.style.left='';}
+  else{
+   var r=tabEl.key.getBoundingClientRect();
+   fly.style.top=r.top+'px';fly.style.left=r.left+'px';
+   fly.style.setProperty('--tab-h',r.height+'px');}}
  show(null);}
 
 var listeners=[];
@@ -1146,6 +1228,10 @@ function fit(){
   s.y=Math.max(0,Math.min(H-TYPE[s.type].h,s.y));});
  return true;}
 if(window.ResizeObserver)new ResizeObserver(function(){if(fit())draw();}).observe(wrap);
+/* a page that was display:none reports no size, and the observer does not
+   always fire when it becomes visible — so measure again when it is shown */
+BINDER.on(function(page){if(page==='diagram')setTimeout(function(){if(fit())draw();},0);});
+window.addEventListener('resize',function(){if(fit())draw();});
 
 function C(){
  var s=getComputedStyle(document.documentElement);
@@ -1921,5 +2007,70 @@ KEY.forEach(function(k){
  dl.appendChild(dt);dl.appendChild(dd);});
 BINDER.page('key').appendChild(hk);
 hk.querySelector('.hk-min').addEventListener('click',function(){BINDER.closeKey();});
+})();
+
+/* ---------- the bottom bar, phones only ----------
+   Four buttons for the four panels. Tapping one brings its sheet up and puts
+   any other away; tapping the one that is already up closes it. Everything it
+   drives is the same state the desktop tabs drive, so nothing is duplicated. */
+(function(){
+var PHONE=window.matchMedia('(max-width:780px)');
+
+var bar=document.createElement('nav');
+bar.className='mb';
+bar.setAttribute('role','tablist');
+bar.setAttribute('aria-label','Study panels');
+bar.innerHTML=
+ '<button data-m="notes" role="tab" aria-selected="false">Notes</button>'+
+ '<button data-m="diagram" role="tab" aria-selected="false">Diagram</button>'+
+ '<button data-m="key" role="tab" aria-selected="false">Key</button>'+
+ '<button data-m="checklist" role="tab" aria-selected="false">List<b id="mbN">0/0</b></button>';
+document.body.appendChild(bar);
+
+var clTab=document.getElementById('clTab'),
+    fly=document.querySelector('.bn-fly'),
+    num=bar.querySelector('#mbN');
+
+function openNow(){
+ if(fly.classList.contains('on'))return 'key';
+ if(document.body.classList.contains('cl-open'))return 'checklist';
+ if(BINDER.isOpen()){
+  var p=document.querySelector('.bn-page.on');
+  return p?p.dataset.p:'';}
+ return '';}
+
+function shutAll(){
+ BINDER.closeKey();
+ BINDER.close();
+ if(document.body.classList.contains('cl-open'))clTab.click();}
+
+bar.addEventListener('click',function(e){
+ var b=e.target.closest('button');
+ if(!b)return;
+ var want=b.dataset.m,was=openNow();
+ shutAll();
+ if(want===was)return;                 /* tapping the open one closes it */
+ if(want==='checklist')clTab.click();
+ else BINDER.open(want);});
+
+/* the scrim closes whatever is up */
+var scrim=document.getElementById('clScrim');
+if(scrim)scrim.addEventListener('click',function(){
+ if(PHONE.matches)shutAll();});
+
+function paint(){
+ var cur=openNow();
+ bar.querySelectorAll('button').forEach(function(b){
+  b.setAttribute('aria-selected',String(b.dataset.m===cur));});
+ document.body.classList.toggle('sheet-open',!!cur);
+ var t=document.getElementById('clTotal');
+ if(t)num.textContent=t.textContent;}
+
+new MutationObserver(paint).observe(document.body,{attributes:true,attributeFilter:['class']});
+new MutationObserver(paint).observe(fly,{attributes:true,attributeFilter:['class']});
+BA.on(paint);
+BINDER.on(paint);
+PHONE.addEventListener('change',function(){shutAll();paint();});
+paint();
 })();
 </script></body></html>
