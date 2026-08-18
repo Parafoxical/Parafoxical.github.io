@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning Log — Business Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#F6F8FA;
+    --surface:#FFFFFF;
+    --ink:#16212E;
+    --muted:#66748A;
+    --faint:#94A0B2;
+    --rule:#DDE3EB;
+    --done:#2C6B4F;
+    --done-bg:#EAF3EE;
+    --active:#A8650B;
+    --focus:#2D5FA8;
+    /* the subject strip is written against the pack's names for these */
+    --line:var(--rule);
+    --ink3:var(--faint);
+    --display:"Space Grotesk",system-ui,sans-serif;
+    --body:"IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+
+  *{box-sizing:border-box;}
+
+  .lg-root{
+    font-family:var(--body);
+    color:var(--ink);
+    background:var(--canvas);
+    padding:32px 20px 56px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .lg-wrap{max-width:860px;margin:0 auto;}
+
+  /* ── Header ───────────────────────────────────────────── */
+  .lg-head{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:6px;
+  }
+  .lg-eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--faint);
+    margin:0 0 10px;
+  }
+  .lg-title{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:clamp(28px,5vw,40px);
+    letter-spacing:-.02em;
+    margin:0 0 8px;
+  }
+  .lg-sub{
+    font-size:15px;
+    color:var(--muted);
+    margin:0;
+    max-width:56ch;
+  }
+
+  /* ── Summary strip ────────────────────────────────────── */
+  .lg-stats{
+    display:flex;
+    flex-wrap:wrap;
+    gap:28px;
+    padding:18px 0 20px;
+    border-bottom:1px solid var(--rule);
+    margin-bottom:34px;
+  }
+  .lg-stat-k{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--faint);
+    display:block;
+    margin-bottom:3px;
+  }
+  .lg-stat-v{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:24px;
+    letter-spacing:-.01em;
+  }
+  .lg-bar{
+    flex:1 1 180px;
+    min-width:160px;
+    align-self:flex-end;
+    padding-bottom:6px;
+  }
+  .lg-bar-track{
+    height:6px;
+    background:var(--rule);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .lg-bar-fill{
+    height:100%;
+    width:0%;
+    background:var(--done);
+    border-radius:3px;
+    transition:width .35s ease;
+  }
+
+  /* ── Sections ─────────────────────────────────────────── */
+  .lg-sec{margin-bottom:40px;}
+  .lg-sec-head{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    margin-bottom:4px;
+  }
+  .lg-sec-title{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:19px;
+    letter-spacing:-.01em;
+    margin:0;
+  }
+  .lg-sec-count{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--faint);
+  }
+  .lg-sec-note{
+    font-size:13.5px;
+    color:var(--muted);
+    margin:0 0 16px;
+    max-width:60ch;
+  }
+
+  /* ── Rows ─────────────────────────────────────────────── */
+  .lg-list{list-style:none;margin:0;padding:0;}
+  .lg-row{
+    display:grid;
+    grid-template-columns:26px 62px 1fr 74px 94px;
+    gap:14px;
+    align-items:start;
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:5px;
+    padding:13px 15px;
+    margin-bottom:7px;
+    transition:border-color .18s ease, background .18s ease;
+  }
+  .lg-row:hover{border-color:#C3CDDB;}
+  .lg-row.is-done{background:var(--done-bg);border-color:#BFD9CB;}
+
+  .lg-check{
+    appearance:none;
+    -webkit-appearance:none;
+    width:19px;height:19px;
+    margin:2px 0 0;
+    border:1.5px solid #A9B4C4;
+    border-radius:4px;
+    background:var(--surface);
+    cursor:pointer;
+    position:relative;
+    flex-shrink:0;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .lg-check:checked{background:var(--done);border-color:var(--done);}
+  .lg-check:checked::after{
+    content:"";
+    position:absolute;
+    left:5.5px;top:2px;
+    width:5px;height:10px;
+    border:solid #fff;
+    border-width:0 2px 2px 0;
+    transform:rotate(43deg);
+  }
+  .lg-check:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  .lg-id{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--faint);
+    padding-top:3px;
+    letter-spacing:.02em;
+  }
+  .lg-row.is-done .lg-id{color:var(--done);}
+
+  .lg-name{
+    font-weight:600;
+    font-size:14.5px;
+    display:block;
+    margin-bottom:2px;
+  }
+  .lg-row.is-done .lg-name{text-decoration:line-through;text-decoration-color:#9BBFA9;}
+  .lg-detail{
+    font-size:12.5px;
+    color:var(--muted);
+    display:block;
+    line-height:1.45;
+  }
+
+  .lg-est{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--faint);
+    text-align:right;
+    padding-top:3px;
+    white-space:nowrap;
+  }
+
+  .lg-time{
+    font-family:var(--mono);
+    font-size:12.5px;
+    width:100%;
+    padding:4px 7px;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    background:var(--canvas);
+    color:var(--ink);
+    text-align:right;
+  }
+  .lg-time::placeholder{color:#B4BECC;}
+  .lg-time:focus{
+    outline:2px solid var(--focus);
+    outline-offset:1px;
+    background:var(--surface);
+  }
+  .lg-time.has-val{color:var(--active);font-weight:500;}
+
+  /* ── Column labels ────────────────────────────────────── */
+  .lg-cols{
+    display:grid;
+    grid-template-columns:26px 62px 1fr 74px 94px;
+    gap:14px;
+    padding:0 15px 6px;
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:.11em;
+    text-transform:uppercase;
+    color:var(--faint);
+  }
+  .lg-cols span:nth-child(4),
+  .lg-cols span:nth-child(5){text-align:right;}
+
+  /* ── Footer ───────────────────────────────────────────── */
+  .lg-foot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+    border-top:1px solid var(--rule);
+    padding-top:16px;
+    font-size:12.5px;
+    color:var(--faint);
+  }
+  .lg-reset{
+    font-family:var(--body);
+    font-size:12.5px;
+    color:var(--muted);
+    background:none;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:5px 11px;
+    cursor:pointer;
+  }
+  .lg-reset:hover{border-color:#B9C4D2;color:var(--ink);}
+  .lg-reset:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  /* ── Mobile ───────────────────────────────────────────── */
+  @media (max-width:600px){
+    .lg-cols{display:none;}
+    .lg-row{
+      grid-template-columns:24px 1fr;
+      grid-template-areas:
+        "check id"
+        ".     name"
+        ".     times";
+      gap:6px 12px;
+    }
+    .lg-row > .lg-check{grid-area:check;}
+    .lg-row > .lg-id{grid-area:id;padding-top:2px;}
+    .lg-row > .lg-body{grid-area:name;}
+    .lg-row > .lg-est{
+      grid-area:times;
+      text-align:left;
+      padding-top:4px;
+    }
+    .lg-row > .lg-time-cell{
+      grid-area:times;
+      justify-self:end;
+      width:94px;
+    }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
+
+/* ---------- the subject strip ---------- */
+.subs{display:flex;gap:1px;align-items:stretch;margin:0 0 8px;
+ border-bottom:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sub{flex:0 0 auto;font-family:"Barlow Condensed",sans-serif;font-weight:600;
+ font-size:15px;line-height:1.2;letter-spacing:.04em;text-transform:uppercase;
+ color:var(--ink3);text-decoration:none;padding:3px 13px 6px;white-space:nowrap;
+ border-bottom:2px solid transparent;margin-bottom:-1px}
+.sub:hover{color:var(--ink)}
+.sub.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sub.soon{opacity:.4;cursor:default}
+@media (max-width:600px){.sub{font-size:14px;padding:3px 10px 5px}}
+
+/* the strip sits above the log's own header, on the log's own measure */
+.subs{max-width:860px;margin:0 auto 26px;padding-bottom:0}
+.lg-go{font-family:var(--mono);font-size:10px;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--focus);text-decoration:none;
+ border:1px solid var(--rule);border-radius:3px;padding:1px 6px;margin-left:8px;
+ white-space:nowrap;vertical-align:1px}
+.lg-go:hover{border-color:var(--focus);background:#EDF2FA}
+.lg-row.is-done .lg-go{border-color:#BFD9CB}
+</style>
+</head>
+<body>
+<div class="lg-root">
+<nav class="subs" aria-label="Subject"><a class="sub on" href="tracker.html" aria-current="page">Tracker</a><a class="sub" href="sql.html">SQL</a><a class="sub" href="index.html">PRINCE2</a></nav>
+<div class="lg-wrap">
+
+  <header class="lg-head">
+    <p class="lg-eyebrow">Self-directed study · Aug 2026</p>
+    <h1 class="lg-title">Learning Log</h1>
+    <p class="lg-sub">Working toward junior business analyst, data analyst and QA roles. Estimated time against actual, tracked as I go.</p>
+  </header>
+
+  <div class="lg-stats">
+    <div>
+      <span class="lg-stat-k">Complete</span>
+      <span class="lg-stat-v" id="lgDone">0 / 15</span>
+    </div>
+    <div>
+      <span class="lg-stat-k">Hours logged</span>
+      <span class="lg-stat-v" id="lgHours">0.0</span>
+    </div>
+    <div class="lg-bar">
+      <span class="lg-stat-k">Progress</span>
+      <div class="lg-bar-track"><div class="lg-bar-fill" id="lgFill"></div></div>
+    </div>
+  </div>
+
+  <section class="lg-sec">
+    <div class="lg-sec-head">
+      <h2 class="lg-sec-title">Terminology</h2>
+      <span class="lg-sec-count">8 blocks · 72 terms</span>
+    </div>
+    <p class="lg-sec-note">Every term defined out loud, unaided, before it goes on the CV.</p>
+    <div class="lg-cols">
+      <span></span><span>Ref</span><span>Item</span><span>Est.</span><span>Actual</span>
+    </div>
+    <ul class="lg-list" id="lgVoc"></ul>
+  </section>
+
+  <section class="lg-sec">
+    <div class="lg-sec-head">
+      <h2 class="lg-sec-title">Practical skills</h2>
+      <span class="lg-sec-count">7 items</span>
+    </div>
+    <p class="lg-sec-note">Each one taken far enough to defend it in an interview, with the work saved as evidence.</p>
+    <div class="lg-cols">
+      <span></span><span>Ref</span><span>Item</span><span>Est.</span><span>Actual</span>
+    </div>
+    <ul class="lg-list" id="lgSkl"></ul>
+  </section>
+
+  <footer class="lg-foot">
+    <span id="lgSaved">Progress saves in this browser</span>
+    <button class="lg-reset" id="lgReset" type="button">Clear all</button>
+  </footer>
+
+</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var VOCAB = [
+    ["VOC-01","Requirements","Elicitation · functional vs non-functional · user story · acceptance criteria · Definition of Done · MoSCoW · epic/feature/story/task · backlog refinement","25m"],
+    ["VOC-02","Process modelling","BPMN 2.0 symbols · swimlanes · as-is / to-be · gap analysis · SIPOC","20m"],
+    ["VOC-03","Testing","UAT · SIT · regression · smoke · test case · test plan · defect lifecycle · severity vs priority · black/white box","30m"],
+    ["VOC-04","Agile &amp; delivery","Agile vs Waterfall · Scrum · Kanban · sprint · the four ceremonies · Product Owner · Scrum Master · story points · velocity · burndown","30m"],
+    ["VOC-05","Governance","RAID log · stakeholder analysis · RACI · change control · go-live / cutover / hypercare","20m"],
+    ["VOC-06","Data","SQL · MI · KPI · ETL · data quality · dashboard · data warehouse vs lake","25m"],
+    ["VOC-07","Tools","Jira · Confluence · Azure DevOps · Visio / draw.io · Power BI · ServiceNow","15m"],
+    ["VOC-08","Certifications","BCS Foundation BA · ISTQB CTFL · IIBA ECBA · PRINCE2 · Lean Six Sigma · PL-300 · CIMA / ACCA / AAT","15m"]
+  ];
+
+  var SKILLS = [
+    ["SKL-01","SQL","SELECT · WHERE · ORDER BY · GROUP BY · COUNT/SUM/AVG · INNER and LEFT JOIN. Via SQLBolt, then Mode's tutorial.","3–4h"],
+    ["SKL-02","Excel","XLOOKUP and VLOOKUP · pivot tables · IF · COUNTIFS/SUMIFS · INDEX/MATCH · Text to Columns · conditional formatting.","3–4h"],
+    ["SKL-03","Power BI","Load a CSV, clean it in Power Query, build four visuals and a slicer. Microsoft Learn's guided path; datasets from data.gov.uk.","4–5h"],
+    ["SKL-04","BPMN process mapping","Six symbols in draw.io: task, gateway, start, end, sequence flow, swimlane. Map one process end to end.","1–2h"],
+    ["SKL-05","Jira","Free tier. Create a project, write an epic, break it into stories with acceptance criteria, run a sprint board.","1–2h"],
+    ["SKL-06","Test case writing","ID · preconditions · steps · test data · expected vs actual · pass/fail. Ten cases for a login or checkout flow, including negative cases.","1h"],
+    ["SKL-07","User stories","As a / I want / so that, with Given–When–Then acceptance criteria. Eight to ten for a process I know.","1h"]
+  ];
+
+  /* Where a row has a page behind it. Rows not named here render as plain
+     text — a link that goes nowhere is worse than no link at all. */
+  var LINKS = {
+    "SKL-01":["sql.html","SQL"],
+    "VOC-06":["sql.html","SQL"],
+    "VOC-08":["index.html","PRINCE2"]
+  };
+
+  /* Storage: uses localStorage where available, falls back to memory. */
+  var KEY = "learning-log-v1";
+  var mem = {};
+  var store = {
+    read:function(){
+      try{
+        var raw = window.localStorage.getItem(KEY);
+        return raw ? JSON.parse(raw) : {};
+      }catch(e){ return mem; }
+    },
+    write:function(data){
+      mem = data;
+      try{ window.localStorage.setItem(KEY, JSON.stringify(data)); }
+      catch(e){ /* memory only */ }
+    },
+    clear:function(){
+      mem = {};
+      try{ window.localStorage.removeItem(KEY); }catch(e){}
+    },
+    persistent:function(){
+      try{
+        window.localStorage.setItem(KEY+"-t","1");
+        window.localStorage.removeItem(KEY+"-t");
+        return true;
+      }catch(e){ return false; }
+    }
+  };
+
+  var state = store.read();
+  var TOTAL = VOCAB.length + SKILLS.length;
+
+  function row(item){
+    var id = item[0];
+    var saved = state[id] || {};
+    var li = document.createElement("li");
+    li.className = "lg-row" + (saved.done ? " is-done" : "");
+
+    var box = document.createElement("input");
+    box.type = "checkbox";
+    box.className = "lg-check";
+    box.checked = !!saved.done;
+    box.setAttribute("aria-label", "Mark " + item[1] + " complete");
+
+    var ref = document.createElement("span");
+    ref.className = "lg-id";
+    ref.textContent = id;
+
+    var body = document.createElement("div");
+    body.className = "lg-body";
+    var go = LINKS[id]
+      ? '<a class="lg-go" href="' + LINKS[id][0] + '">Open ' + LINKS[id][1] + '</a>'
+      : '';
+    body.innerHTML = '<span class="lg-name">' + item[1] + go + '</span>' +
+                     '<span class="lg-detail">' + item[2] + '</span>';
+
+    var est = document.createElement("span");
+    est.className = "lg-est";
+    est.textContent = item[3];
+
+    var cell = document.createElement("div");
+    cell.className = "lg-time-cell";
+    var time = document.createElement("input");
+    time.type = "text";
+    time.className = "lg-time" + (saved.time ? " has-val" : "");
+    time.placeholder = "—";
+    time.value = saved.time || "";
+    time.setAttribute("aria-label", "Time taken for " + item[1]);
+    cell.appendChild(time);
+
+    box.addEventListener("change", function(){
+      li.classList.toggle("is-done", box.checked);
+      save(id, {done:box.checked, time:time.value});
+    });
+
+    time.addEventListener("input", function(){
+      time.classList.toggle("has-val", time.value.trim() !== "");
+      save(id, {done:box.checked, time:time.value});
+    });
+
+    li.appendChild(box);
+    li.appendChild(ref);
+    li.appendChild(body);
+    li.appendChild(est);
+    li.appendChild(cell);
+    return li;
+  }
+
+  function save(id, val){
+    state[id] = val;
+    store.write(state);
+    refresh();
+  }
+
+  /* Reads "2h 30m", "1.5", "90m", "2:30" and similar. */
+  function hours(str){
+    if(!str) return 0;
+    var s = String(str).toLowerCase().trim();
+    var total = 0, matched = false;
+
+    var hm = s.match(/(\d+(?:\.\d+)?)\s*h/);
+    if(hm){ total += parseFloat(hm[1]); matched = true; }
+
+    var mm = s.match(/(\d+(?:\.\d+)?)\s*m(?!o)/);
+    if(mm){ total += parseFloat(mm[1]) / 60; matched = true; }
+
+    if(!matched){
+      var clock = s.match(/^(\d+):(\d{1,2})$/);
+      if(clock) return parseFloat(clock[1]) + parseFloat(clock[2]) / 60;
+      var bare = s.match(/^(\d+(?:\.\d+)?)$/);
+      if(bare) return parseFloat(bare[1]);
+    }
+    return total;
+  }
+
+  function refresh(){
+    var done = 0, hrs = 0;
+    Object.keys(state).forEach(function(k){
+      if(state[k] && state[k].done) done++;
+      if(state[k]) hrs += hours(state[k].time);
+    });
+    document.getElementById("lgDone").textContent = done + " / " + TOTAL;
+    document.getElementById("lgHours").textContent = hrs.toFixed(1);
+    document.getElementById("lgFill").style.width = (done / TOTAL * 100) + "%";
+  }
+
+  var vocList = document.getElementById("lgVoc");
+  var sklList = document.getElementById("lgSkl");
+  VOCAB.forEach(function(i){ vocList.appendChild(row(i)); });
+  SKILLS.forEach(function(i){ sklList.appendChild(row(i)); });
+
+  document.getElementById("lgReset").addEventListener("click", function(){
+    store.clear();
+    state = {};
+    vocList.innerHTML = "";
+    sklList.innerHTML = "";
+    VOCAB.forEach(function(i){ vocList.appendChild(row(i)); });
+    SKILLS.forEach(function(i){ sklList.appendChild(row(i)); });
+    refresh();
+  });
+
+  if(!store.persistent()){
+    document.getElementById("lgSaved").textContent =
+      "Storage unavailable here — progress will save once this is on your site";
+  }
+
+  refresh();
+})();
+</script>
+</body>
+</html>
