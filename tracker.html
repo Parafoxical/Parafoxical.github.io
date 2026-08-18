@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracker — Applications and learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#F6F8FA;
+    --surface:#FFFFFF;
+    --ink:#16212E;
+    --muted:#66748A;
+    --faint:#94A0B2;
+    --rule:#DDE3EB;
+    --done:#2C6B4F;
+    --done-bg:#EAF3EE;
+    --active:#A8650B;
+    --focus:#2D5FA8;
+    /* the subject strip is written against the pack's names for these */
+    --line:var(--rule);
+    --ink3:var(--faint);
+    --display:"Space Grotesk",system-ui,sans-serif;
+    --body:"IBM Plex Sans",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+
+  *{box-sizing:border-box;}
+
+  .lg-root{
+    font-family:var(--body);
+    color:var(--ink);
+    background:var(--canvas);
+    padding:32px 20px 56px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .lg-wrap{max-width:860px;margin:0 auto;}
+
+  /* ── Header ───────────────────────────────────────────── */
+  .lg-head{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:6px;
+  }
+  .lg-eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--faint);
+    margin:0 0 10px;
+  }
+  .lg-title{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:clamp(28px,5vw,40px);
+    letter-spacing:-.02em;
+    margin:0 0 8px;
+  }
+  .lg-sub{
+    font-size:15px;
+    color:var(--muted);
+    margin:0;
+    max-width:56ch;
+  }
+
+  /* ── Summary strip ────────────────────────────────────── */
+  .lg-stats{
+    display:flex;
+    flex-wrap:wrap;
+    gap:28px;
+    padding:18px 0 20px;
+    border-bottom:1px solid var(--rule);
+    margin-bottom:34px;
+  }
+  .lg-stat-k{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--faint);
+    display:block;
+    margin-bottom:3px;
+  }
+  .lg-stat-v{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:24px;
+    letter-spacing:-.01em;
+  }
+  .lg-bar{
+    flex:1 1 180px;
+    min-width:160px;
+    align-self:flex-end;
+    padding-bottom:6px;
+  }
+  .lg-bar-track{
+    height:6px;
+    background:var(--rule);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .lg-bar-fill{
+    height:100%;
+    width:0%;
+    background:var(--done);
+    border-radius:3px;
+    transition:width .35s ease;
+  }
+
+  /* ── Sections ─────────────────────────────────────────── */
+  .lg-sec{margin-bottom:40px;}
+  .lg-sec-head{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    margin-bottom:4px;
+  }
+  .lg-sec-title{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:19px;
+    letter-spacing:-.01em;
+    margin:0;
+  }
+  .lg-sec-count{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--faint);
+  }
+  .lg-sec-note{
+    font-size:13.5px;
+    color:var(--muted);
+    margin:0 0 16px;
+    max-width:60ch;
+  }
+
+  /* ── Rows ─────────────────────────────────────────────── */
+  .lg-list{list-style:none;margin:0;padding:0;}
+  .lg-row{
+    display:grid;
+    grid-template-columns:26px 62px 1fr 74px 94px;
+    gap:14px;
+    align-items:start;
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:5px;
+    padding:13px 15px;
+    margin-bottom:7px;
+    transition:border-color .18s ease, background .18s ease;
+  }
+  .lg-row:hover{border-color:#C3CDDB;}
+  .lg-row.is-done{background:var(--done-bg);border-color:#BFD9CB;}
+
+  .lg-check{
+    appearance:none;
+    -webkit-appearance:none;
+    width:19px;height:19px;
+    margin:2px 0 0;
+    border:1.5px solid #A9B4C4;
+    border-radius:4px;
+    background:var(--surface);
+    cursor:pointer;
+    position:relative;
+    flex-shrink:0;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .lg-check:checked{background:var(--done);border-color:var(--done);}
+  .lg-check:checked::after{
+    content:"";
+    position:absolute;
+    left:5.5px;top:2px;
+    width:5px;height:10px;
+    border:solid #fff;
+    border-width:0 2px 2px 0;
+    transform:rotate(43deg);
+  }
+  .lg-check:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  .lg-id{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--faint);
+    padding-top:3px;
+    letter-spacing:.02em;
+  }
+  .lg-row.is-done .lg-id{color:var(--done);}
+
+  .lg-name{
+    font-weight:600;
+    font-size:14.5px;
+    display:block;
+    margin-bottom:2px;
+  }
+  .lg-row.is-done .lg-name{text-decoration:line-through;text-decoration-color:#9BBFA9;}
+  .lg-detail{
+    font-size:12.5px;
+    color:var(--muted);
+    display:block;
+    line-height:1.45;
+  }
+
+  .lg-est{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--faint);
+    text-align:right;
+    padding-top:3px;
+    white-space:nowrap;
+  }
+
+  .lg-time{
+    font-family:var(--mono);
+    font-size:12.5px;
+    width:100%;
+    padding:4px 7px;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    background:var(--canvas);
+    color:var(--ink);
+    text-align:right;
+  }
+  .lg-time::placeholder{color:#B4BECC;}
+  .lg-time:focus{
+    outline:2px solid var(--focus);
+    outline-offset:1px;
+    background:var(--surface);
+  }
+  .lg-time.has-val{color:var(--active);font-weight:500;}
+
+  /* ── Column labels ────────────────────────────────────── */
+  .lg-cols{
+    display:grid;
+    grid-template-columns:26px 62px 1fr 74px 94px;
+    gap:14px;
+    padding:0 15px 6px;
+    font-family:var(--mono);
+    font-size:9.5px;
+    letter-spacing:.11em;
+    text-transform:uppercase;
+    color:var(--faint);
+  }
+  .lg-cols span:nth-child(4),
+  .lg-cols span:nth-child(5){text-align:right;}
+
+  /* ── Footer ───────────────────────────────────────────── */
+  .lg-foot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+    border-top:1px solid var(--rule);
+    padding-top:16px;
+    font-size:12.5px;
+    color:var(--faint);
+  }
+  .lg-reset{
+    font-family:var(--body);
+    font-size:12.5px;
+    color:var(--muted);
+    background:none;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    padding:5px 11px;
+    cursor:pointer;
+  }
+  .lg-reset:hover{border-color:#B9C4D2;color:var(--ink);}
+  .lg-reset:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+
+  /* ── Mobile ───────────────────────────────────────────── */
+  @media (max-width:600px){
+    .lg-cols{display:none;}
+    .lg-row{
+      grid-template-columns:24px 1fr;
+      grid-template-areas:
+        "check id"
+        ".     name"
+        ".     times";
+      gap:6px 12px;
+    }
+    .lg-row > .lg-check{grid-area:check;}
+    .lg-row > .lg-id{grid-area:id;padding-top:2px;}
+    .lg-row > .lg-body{grid-area:name;}
+    .lg-row > .lg-est{
+      grid-area:times;
+      text-align:left;
+      padding-top:4px;
+    }
+    .lg-row > .lg-time-cell{
+      grid-area:times;
+      justify-self:end;
+      width:94px;
+    }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
+
+/* ---------- the subject strip ---------- */
+.subs{display:flex;gap:1px;align-items:stretch;margin:0 0 8px;
+ border-bottom:1px solid var(--line);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sub{flex:0 0 auto;font-family:"Barlow Condensed",sans-serif;font-weight:600;
+ font-size:15px;line-height:1.2;letter-spacing:.04em;text-transform:uppercase;
+ color:var(--ink3);text-decoration:none;padding:3px 13px 6px;white-space:nowrap;
+ border-bottom:2px solid transparent;margin-bottom:-1px}
+.sub:hover{color:var(--ink)}
+.sub.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sub.soon{opacity:.4;cursor:default}
+@media (max-width:600px){.sub{font-size:14px;padding:3px 10px 5px}}
+
+/* the strip sits above the log's own header, on the log's own measure */
+.subs{max-width:860px;margin:0 auto 26px;padding-bottom:0}
+.lg-go{font-family:var(--mono);font-size:10px;letter-spacing:.09em;
+ text-transform:uppercase;color:var(--focus);text-decoration:none;
+ border:1px solid var(--rule);border-radius:3px;padding:1px 6px;margin-left:8px;
+ white-space:nowrap;vertical-align:1px}
+.lg-go:hover{border-color:var(--focus);background:#EDF2FA}
+.lg-row.is-done .lg-go{border-color:#BFD9CB}
+
+/* ---------- tracker: the job table and the flow ---------- */
+:root{
+  --bad:#A8402B;
+  --bad-bg:#F8EEEB;
+}
+.tk-tabs{display:flex;gap:2px;margin:0 0 24px;border-bottom:1px solid var(--rule);}
+.tk-tab{font-family:var(--display);font-weight:500;font-size:14.5px;
+ color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;
+ margin-bottom:-1px;padding:9px 14px;cursor:pointer;letter-spacing:-.01em;}
+.tk-tab:hover{color:var(--ink);}
+.tk-tab.on{color:var(--ink);border-bottom-color:var(--focus);}
+.tk-tab:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+.tk-tab-n{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:6px;}
+.tk-panel[hidden]{display:none;}
+
+/* ── the numbers along the top ─────────────────────────── */
+.tk-stats{
+  display:flex;flex-wrap:wrap;gap:26px;
+  padding:2px 0 20px;border-bottom:1px solid var(--rule);margin-bottom:24px;
+}
+.tk-stat-k{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+ text-transform:uppercase;color:var(--faint);display:block;margin-bottom:3px;}
+.tk-stat-v{font-family:var(--display);font-weight:500;font-size:24px;
+ letter-spacing:-.01em;display:block;}
+.tk-stat-v.good{color:var(--done);}
+
+/* ── adding one ────────────────────────────────────────── */
+.tk-add{
+  display:grid;grid-template-columns:1fr 1fr 138px 74px;gap:8px;
+  background:var(--surface);border:1px solid var(--rule);border-radius:5px;
+  padding:11px;
+}
+.tk-add input{
+  font-family:var(--body);font-size:13.5px;color:var(--ink);
+  border:1px solid var(--rule);border-radius:4px;padding:7px 9px;
+  background:var(--canvas);min-width:0;
+}
+.tk-add input:focus{outline:2px solid var(--focus);outline-offset:1px;background:var(--surface);}
+.tk-add input::placeholder{color:#B4BECC;}
+.tk-btn{
+  font-family:var(--body);font-size:13px;color:var(--ink);background:var(--canvas);
+  border:1px solid var(--rule);border-radius:4px;padding:6px 12px;cursor:pointer;
+  white-space:nowrap;text-decoration:none;display:inline-block;line-height:1.35;
+}
+.tk-btn[hidden]{display:none;}
+.tk-btn:hover{border-color:#B9C4D2;}
+.tk-btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px;}
+.tk-btn.prim{background:var(--focus);border-color:var(--focus);color:#fff;font-weight:500;}
+.tk-btn.prim:hover{background:#26518F;border-color:#26518F;}
+.tk-btn.danger:hover{border-color:var(--bad);color:var(--bad);background:var(--bad-bg);}
+
+/* ── filter row ────────────────────────────────────────── */
+.tk-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+ justify-content:space-between;margin:20px 0 10px;}
+.tk-filters{display:flex;flex-wrap:wrap;gap:5px;}
+.tk-fil{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);background:none;border:1px solid var(--rule);border-radius:3px;
+  padding:4px 9px;cursor:pointer;
+}
+.tk-fil:hover{border-color:#B9C4D2;color:var(--ink);}
+.tk-fil.on{background:var(--ink);border-color:var(--ink);color:#fff;}
+.tk-search{
+  font-family:var(--body);font-size:13px;padding:6px 10px;min-width:180px;
+  border:1px solid var(--rule);border-radius:4px;background:var(--surface);color:var(--ink);
+}
+.tk-search:focus{outline:2px solid var(--focus);outline-offset:1px;}
+
+/* ── the table ─────────────────────────────────────────── */
+.tk-cols{
+  display:grid;grid-template-columns:1fr 1fr 116px 130px 30px;gap:12px;
+  padding:0 14px 6px;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--faint);
+}
+.tk-list{list-style:none;margin:0;padding:0;}
+.tk-row{
+  background:var(--surface);border:1px solid var(--rule);border-left-width:3px;
+  border-radius:5px;margin-bottom:6px;transition:border-color .18s ease;
+}
+.tk-row:hover{border-color:#C3CDDB;}
+.tk-main{
+  display:grid;grid-template-columns:1fr 1fr 116px 130px 30px;gap:12px;
+  align-items:center;padding:8px 12px;
+}
+.tk-cell{
+  font-family:var(--body);font-size:13.5px;color:var(--ink);width:100%;
+  border:1px solid transparent;border-radius:4px;padding:5px 7px;background:none;min-width:0;
+}
+.tk-cell:hover{border-color:var(--rule);}
+.tk-cell:focus{outline:2px solid var(--focus);outline-offset:0;background:var(--canvas);}
+.tk-cell.co{font-weight:600;}
+.tk-cell.dt{font-family:var(--mono);font-size:12px;color:var(--muted);}
+.tk-stage{
+  font-family:var(--body);font-size:12.5px;font-weight:500;width:100%;
+  border:1px solid var(--rule);border-radius:4px;padding:5px 7px;
+  background:var(--canvas);color:var(--ink);cursor:pointer;
+}
+.tk-stage:focus{outline:2px solid var(--focus);outline-offset:1px;}
+.tk-more{
+  font-family:var(--mono);font-size:15px;line-height:1;color:var(--faint);
+  background:none;border:0;cursor:pointer;padding:5px 4px;border-radius:3px;
+}
+.tk-more:hover{color:var(--ink);background:var(--canvas);}
+.tk-more:focus-visible{outline:2px solid var(--focus);outline-offset:1px;}
+
+/* ── one row opened up ─────────────────────────────────── */
+.tk-det{border-top:1px solid var(--rule);padding:13px 14px 14px;background:var(--canvas);}
+.tk-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px;
+ margin-bottom:11px;}
+.tk-f{display:block;margin-bottom:11px;}
+.tk-fields .tk-f{margin-bottom:0;}
+.tk-f span{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;
+ text-transform:uppercase;color:var(--faint);display:block;margin-bottom:3px;}
+.tk-f input,.tk-f textarea{
+  font-family:var(--body);font-size:13px;color:var(--ink);width:100%;
+  border:1px solid var(--rule);border-radius:4px;padding:6px 8px;background:var(--surface);
+}
+.tk-f textarea{resize:vertical;min-height:52px;line-height:1.45;}
+.tk-f input:focus,.tk-f textarea:focus{outline:2px solid var(--focus);outline-offset:1px;}
+.tk-jrn{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:12px;}
+.tk-chip{
+  display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.04em;padding:3px 5px 3px 8px;border-radius:3px;border:1px solid;
+  background:var(--surface);
+}
+.tk-chip b{font-weight:500;}
+.tk-chip i{font-style:normal;color:var(--faint);}
+.tk-chip button{background:none;border:0;cursor:pointer;color:var(--faint);
+ font-size:12px;line-height:1;padding:1px 2px;}
+.tk-chip button:hover{color:var(--bad);}
+.tk-arrow{color:var(--faint);font-size:10px;}
+.tk-det-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;
+ flex-wrap:wrap;}
+.tk-ref{font-family:var(--mono);font-size:10.5px;color:var(--faint);}
+
+/* ── saving ────────────────────────────────────────────── */
+.tk-foot{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  border-top:1px solid var(--rule);margin-top:20px;padding-top:15px;
+}
+.tk-acts{display:flex;gap:7px;flex-wrap:wrap;}
+.tk-status{font-family:var(--mono);font-size:11.5px;color:var(--faint);
+ display:flex;align-items:center;gap:7px;line-height:1.4;}
+.tk-dot{width:7px;height:7px;border-radius:50%;background:var(--faint);flex:0 0 auto;}
+.tk-status.ok .tk-dot{background:var(--done);}
+.tk-status.warn .tk-dot{background:var(--active);}
+.tk-status.err .tk-dot{background:var(--bad);}
+.tk-status.ok{color:var(--done);}
+.tk-status.warn{color:var(--active);}
+.tk-status.err{color:var(--bad);}
+
+.tk-sync{
+  border:1px solid var(--rule);border-radius:5px;background:var(--surface);
+  padding:16px 17px;margin-top:14px;
+}
+.tk-sync h3{font-family:var(--display);font-weight:500;font-size:16px;margin:0 0 8px;}
+.tk-sync p{font-size:13px;color:var(--muted);margin:0 0 10px;max-width:64ch;line-height:1.55;}
+.tk-sync ol{font-size:13px;color:var(--muted);margin:0 0 12px;padding-left:20px;line-height:1.75;}
+.tk-sync code{font-family:var(--mono);font-size:12px;background:var(--canvas);
+ border:1px solid var(--rule);border-radius:3px;padding:1px 4px;}
+.tk-sync a{color:var(--focus);}
+.tk-tok{display:flex;gap:7px;flex-wrap:wrap;}
+.tk-tok input{
+  font-family:var(--mono);font-size:12.5px;flex:1 1 260px;min-width:0;
+  border:1px solid var(--rule);border-radius:4px;padding:7px 9px;
+  background:var(--canvas);color:var(--ink);
+}
+.tk-tok input:focus{outline:2px solid var(--focus);outline-offset:1px;}
+.tk-warn{
+  font-size:12.5px;color:#7A4A08;background:#FBF3E7;border:1px solid #E8D5B0;
+  border-radius:4px;padding:9px 11px;margin:0 0 14px;line-height:1.55;max-width:64ch;
+}
+
+/* ── the flow diagram ──────────────────────────────────── */
+.tk-svgwrap{
+  background:var(--surface);border:1px solid var(--rule);border-radius:5px;
+  padding:14px 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+}
+.tk-svgwrap svg{display:block;}
+.tk-nlab{font-family:var(--body);font-size:12px;font-weight:600;fill:var(--ink);}
+.tk-nval{font-family:var(--mono);font-size:10.5px;fill:var(--faint);}
+.tk-empty{
+  text-align:center;color:var(--faint);font-size:13.5px;padding:40px 20px;
+  border:1px dashed var(--rule);border-radius:5px;background:var(--surface);
+}
+.tk-note{font-size:12.5px;color:var(--muted);margin:14px 0 0;line-height:1.6;max-width:70ch;}
+
+@media (max-width:700px){
+  .tk-add{grid-template-columns:1fr 1fr;}
+  .tk-cols{display:none;}
+  .tk-main{grid-template-columns:1fr 1fr 30px;gap:6px 10px;}
+  .tk-main .tk-cell.co{grid-column:1 / span 2;}
+  .tk-main .tk-cell.ro{grid-column:1 / span 3;}
+  .tk-main .tk-cell.dt{grid-column:1;}
+  .tk-main .tk-stage{grid-column:2 / span 2;}
+}
+
+</style>
+</head>
+<body>
+<div class="lg-root">
+<nav class="subs" aria-label="Subject"><a class="sub on" href="tracker.html" aria-current="page">Tracker</a><a class="sub" href="sql.html">SQL</a><a class="sub" href="index.html">PRINCE2</a></nav>
+<div class="lg-wrap">
+
+  <header class="lg-head">
+    <p class="lg-eyebrow">Career change · Aug 2026</p>
+    <h1 class="lg-title">Tracker</h1>
+    <p class="lg-sub" id="lgSub">Every job applied to. Type straight into the table — it saves as you go.</p>
+  </header>
+
+
+  <nav class="tk-tabs" aria-label="Tracker view">
+    <button class="tk-tab on" type="button" id="tkTabApps" aria-current="page">Applications<span class="tk-tab-n" id="tkTabAppsN"></span></button>
+    <button class="tk-tab" type="button" id="tkTabFlow">Flow</button>
+    <button class="tk-tab" type="button" id="tkTabLog">Learning log</button>
+  </nav>
+
+  <div class="tk-panel" id="tkPanelApps">
+    <div class="tk-stats" id="tkStats"></div>
+
+    <form class="tk-add" id="tkAdd" autocomplete="off">
+      <input id="tkCompany" placeholder="Company" aria-label="Company">
+      <input id="tkRole" placeholder="Role" aria-label="Role">
+      <input id="tkDate" type="date" aria-label="Date applied">
+      <button class="tk-btn prim" type="submit">Add</button>
+    </form>
+
+    <div class="tk-bar">
+      <div class="tk-filters" id="tkFilters"></div>
+      <input class="tk-search" id="tkSearch" type="search" placeholder="Search company or role" aria-label="Search applications">
+    </div>
+
+    <div class="tk-cols">
+      <span>Company</span><span>Role</span><span>Applied</span><span>Stage</span><span></span>
+    </div>
+    <ul class="tk-list" id="tkList"></ul>
+    <div class="tk-empty" id="tkNone" hidden>Nothing here yet. Add the first application above.</div>
+
+    <footer class="tk-foot">
+      <span class="tk-status" id="tkStatus"><span class="tk-dot"></span><span id="tkStatusT">Loading</span></span>
+      <span class="tk-acts">
+        <button class="tk-btn" type="button" id="tkSave">Save to GitHub</button>
+        <button class="tk-btn" type="button" id="tkCopy">Copy JSON</button>
+        <a class="tk-btn" id="tkOpen" href="#" target="_blank" rel="noopener">The file on GitHub</a>
+        <button class="tk-btn" type="button" id="tkSyncBtn">Sync setup</button>
+      </span>
+    </footer>
+
+    <div class="tk-sync" id="tkSyncPanel" hidden>
+      <h3>Saving straight to the repo</h3>
+      <p>This table reads <code id="tkPathLbl"></code> out of the Pages repo, so everyone who
+      opens the page sees the same rows and clearing this browser loses none of them. To let the
+      page write that file back rather than only read it, give it a token scoped to that one repo.</p>
+      <ol>
+        <li>Open <a id="tkTokLink" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a></li>
+        <li>Repository access: <b>Only select repositories</b> &rarr; <code id="tkRepoLbl"></code></li>
+        <li>Permissions &rarr; Repository permissions &rarr; <b>Contents: Read and write</b></li>
+        <li>Generate it, copy it, paste it below</li>
+      </ol>
+      <p class="tk-warn">The token is kept in this browser and is never written into the file or
+      the repo. Anyone who has it can edit that one repository and nothing else, which is why it is
+      scoped to that one repository. Revoke it from the same settings page whenever you like.</p>
+      <div class="tk-tok">
+        <input id="tkToken" type="password" placeholder="github_pat_..." aria-label="GitHub token" autocomplete="off">
+        <button class="tk-btn prim" type="button" id="tkTokSave">Save token</button>
+        <button class="tk-btn danger" type="button" id="tkTokClear">Forget it</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tk-panel" id="tkPanelFlow" hidden>
+    <div class="tk-stats" id="tkFlowStats"></div>
+    <div class="tk-svgwrap" id="tkFlowWrap"></div>
+    <p class="tk-note" id="tkFlowNote"></p>
+    <footer class="tk-foot">
+      <span class="tk-status"><span class="tk-dot"></span><span>Drawn from the stage history on every application</span></span>
+      <span class="tk-acts">
+        <button class="tk-btn" type="button" id="tkCopyFlow">Copy for SankeyMATIC</button>
+      </span>
+    </footer>
+  </div>
+
+  <div class="tk-panel" id="tkPanelLog" hidden>
+  <div class="lg-stats">
+    <div>
+      <span class="lg-stat-k">Complete</span>
+      <span class="lg-stat-v" id="lgDone">0 / 15</span>
+    </div>
+    <div>
+      <span class="lg-stat-k">Hours logged</span>
+      <span class="lg-stat-v" id="lgHours">0.0</span>
+    </div>
+    <div class="lg-bar">
+      <span class="lg-stat-k">Progress</span>
+      <div class="lg-bar-track"><div class="lg-bar-fill" id="lgFill"></div></div>
+    </div>
+  </div>
+
+  <section class="lg-sec">
+    <div class="lg-sec-head">
+      <h2 class="lg-sec-title">Terminology</h2>
+      <span class="lg-sec-count">8 blocks · 72 terms</span>
+    </div>
+    <p class="lg-sec-note">Every term defined out loud, unaided, before it goes on the CV.</p>
+    <div class="lg-cols">
+      <span></span><span>Ref</span><span>Item</span><span>Est.</span><span>Actual</span>
+    </div>
+    <ul class="lg-list" id="lgVoc"></ul>
+  </section>
+
+  <section class="lg-sec">
+    <div class="lg-sec-head">
+      <h2 class="lg-sec-title">Practical skills</h2>
+      <span class="lg-sec-count">7 items</span>
+    </div>
+    <p class="lg-sec-note">Each one taken far enough to defend it in an interview, with the work saved as evidence.</p>
+    <div class="lg-cols">
+      <span></span><span>Ref</span><span>Item</span><span>Est.</span><span>Actual</span>
+    </div>
+    <ul class="lg-list" id="lgSkl"></ul>
+  </section>
+
+  <footer class="lg-foot">
+    <span id="lgSaved">Progress saves in this browser</span>
+    <button class="lg-reset" id="lgReset" type="button">Clear all</button>
+  </footer>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var VOCAB = [
+    ["VOC-01","Requirements","Elicitation · functional vs non-functional · user story · acceptance criteria · Definition of Done · MoSCoW · epic/feature/story/task · backlog refinement","25m"],
+    ["VOC-02","Process modelling","BPMN 2.0 symbols · swimlanes · as-is / to-be · gap analysis · SIPOC","20m"],
+    ["VOC-03","Testing","UAT · SIT · regression · smoke · test case · test plan · defect lifecycle · severity vs priority · black/white box","30m"],
+    ["VOC-04","Agile &amp; delivery","Agile vs Waterfall · Scrum · Kanban · sprint · the four ceremonies · Product Owner · Scrum Master · story points · velocity · burndown","30m"],
+    ["VOC-05","Governance","RAID log · stakeholder analysis · RACI · change control · go-live / cutover / hypercare","20m"],
+    ["VOC-06","Data","SQL · MI · KPI · ETL · data quality · dashboard · data warehouse vs lake","25m"],
+    ["VOC-07","Tools","Jira · Confluence · Azure DevOps · Visio / draw.io · Power BI · ServiceNow","15m"],
+    ["VOC-08","Certifications","BCS Foundation BA · ISTQB CTFL · IIBA ECBA · PRINCE2 · Lean Six Sigma · PL-300 · CIMA / ACCA / AAT","15m"]
+  ];
+
+  var SKILLS = [
+    ["SKL-01","SQL","SELECT · WHERE · ORDER BY · GROUP BY · COUNT/SUM/AVG · INNER and LEFT JOIN. Via SQLBolt, then Mode's tutorial.","3–4h"],
+    ["SKL-02","Excel","XLOOKUP and VLOOKUP · pivot tables · IF · COUNTIFS/SUMIFS · INDEX/MATCH · Text to Columns · conditional formatting.","3–4h"],
+    ["SKL-03","Power BI","Load a CSV, clean it in Power Query, build four visuals and a slicer. Microsoft Learn's guided path; datasets from data.gov.uk.","4–5h"],
+    ["SKL-04","BPMN process mapping","Six symbols in draw.io: task, gateway, start, end, sequence flow, swimlane. Map one process end to end.","1–2h"],
+    ["SKL-05","Jira","Free tier. Create a project, write an epic, break it into stories with acceptance criteria, run a sprint board.","1–2h"],
+    ["SKL-06","Test case writing","ID · preconditions · steps · test data · expected vs actual · pass/fail. Ten cases for a login or checkout flow, including negative cases.","1h"],
+    ["SKL-07","User stories","As a / I want / so that, with Given–When–Then acceptance criteria. Eight to ten for a process I know.","1h"]
+  ];
+
+  /* Where a row has a page behind it. Rows not named here render as plain
+     text — a link that goes nowhere is worse than no link at all. */
+  var LINKS = {
+    "SKL-01":["sql.html","SQL"],
+    "VOC-06":["sql.html","SQL"],
+    "VOC-08":["index.html","PRINCE2"]
+  };
+
+  /* Storage: uses localStorage where available, falls back to memory. */
+  var KEY = "learning-log-v1";
+  var mem = {};
+  var store = {
+    read:function(){
+      try{
+        var raw = window.localStorage.getItem(KEY);
+        return raw ? JSON.parse(raw) : {};
+      }catch(e){ return mem; }
+    },
+    write:function(data){
+      mem = data;
+      try{ window.localStorage.setItem(KEY, JSON.stringify(data)); }
+      catch(e){ /* memory only */ }
+    },
+    clear:function(){
+      mem = {};
+      try{ window.localStorage.removeItem(KEY); }catch(e){}
+    },
+    persistent:function(){
+      try{
+        window.localStorage.setItem(KEY+"-t","1");
+        window.localStorage.removeItem(KEY+"-t");
+        return true;
+      }catch(e){ return false; }
+    }
+  };
+
+  var state = store.read();
+  var TOTAL = VOCAB.length + SKILLS.length;
+
+  function row(item){
+    var id = item[0];
+    var saved = state[id] || {};
+    var li = document.createElement("li");
+    li.className = "lg-row" + (saved.done ? " is-done" : "");
+
+    var box = document.createElement("input");
+    box.type = "checkbox";
+    box.className = "lg-check";
+    box.checked = !!saved.done;
+    box.setAttribute("aria-label", "Mark " + item[1] + " complete");
+
+    var ref = document.createElement("span");
+    ref.className = "lg-id";
+    ref.textContent = id;
+
+    var body = document.createElement("div");
+    body.className = "lg-body";
+    var go = LINKS[id]
+      ? '<a class="lg-go" href="' + LINKS[id][0] + '">Open ' + LINKS[id][1] + '</a>'
+      : '';
+    body.innerHTML = '<span class="lg-name">' + item[1] + go + '</span>' +
+                     '<span class="lg-detail">' + item[2] + '</span>';
+
+    var est = document.createElement("span");
+    est.className = "lg-est";
+    est.textContent = item[3];
+
+    var cell = document.createElement("div");
+    cell.className = "lg-time-cell";
+    var time = document.createElement("input");
+    time.type = "text";
+    time.className = "lg-time" + (saved.time ? " has-val" : "");
+    time.placeholder = "—";
+    time.value = saved.time || "";
+    time.setAttribute("aria-label", "Time taken for " + item[1]);
+    cell.appendChild(time);
+
+    box.addEventListener("change", function(){
+      li.classList.toggle("is-done", box.checked);
+      save(id, {done:box.checked, time:time.value});
+    });
+
+    time.addEventListener("input", function(){
+      time.classList.toggle("has-val", time.value.trim() !== "");
+      save(id, {done:box.checked, time:time.value});
+    });
+
+    li.appendChild(box);
+    li.appendChild(ref);
+    li.appendChild(body);
+    li.appendChild(est);
+    li.appendChild(cell);
+    return li;
+  }
+
+  function save(id, val){
+    state[id] = val;
+    store.write(state);
+    refresh();
+  }
+
+  /* Reads "2h 30m", "1.5", "90m", "2:30" and similar. */
+  function hours(str){
+    if(!str) return 0;
+    var s = String(str).toLowerCase().trim();
+    var total = 0, matched = false;
+
+    var hm = s.match(/(\d+(?:\.\d+)?)\s*h/);
+    if(hm){ total += parseFloat(hm[1]); matched = true; }
+
+    var mm = s.match(/(\d+(?:\.\d+)?)\s*m(?!o)/);
+    if(mm){ total += parseFloat(mm[1]) / 60; matched = true; }
+
+    if(!matched){
+      var clock = s.match(/^(\d+):(\d{1,2})$/);
+      if(clock) return parseFloat(clock[1]) + parseFloat(clock[2]) / 60;
+      var bare = s.match(/^(\d+(?:\.\d+)?)$/);
+      if(bare) return parseFloat(bare[1]);
+    }
+    return total;
+  }
+
+  function refresh(){
+    var done = 0, hrs = 0;
+    Object.keys(state).forEach(function(k){
+      if(state[k] && state[k].done) done++;
+      if(state[k]) hrs += hours(state[k].time);
+    });
+    document.getElementById("lgDone").textContent = done + " / " + TOTAL;
+    document.getElementById("lgHours").textContent = hrs.toFixed(1);
+    document.getElementById("lgFill").style.width = (done / TOTAL * 100) + "%";
+  }
+
+  var vocList = document.getElementById("lgVoc");
+  var sklList = document.getElementById("lgSkl");
+  VOCAB.forEach(function(i){ vocList.appendChild(row(i)); });
+  SKILLS.forEach(function(i){ sklList.appendChild(row(i)); });
+
+  document.getElementById("lgReset").addEventListener("click", function(){
+    store.clear();
+    state = {};
+    vocList.innerHTML = "";
+    sklList.innerHTML = "";
+    VOCAB.forEach(function(i){ vocList.appendChild(row(i)); });
+    SKILLS.forEach(function(i){ sklList.appendChild(row(i)); });
+    refresh();
+  });
+
+  if(!store.persistent()){
+    document.getElementById("lgSaved").textContent =
+      "Storage unavailable here — progress will save once this is on your site";
+  }
+
+  refresh();
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Where the record lives. The repo is read off the URL where that is
+     possible, so renaming it does not silently break saving, and falls back to
+     what the build was told. */
+  var REPO = {owner:"Parafoxical", repo:"Parafoxical.github.io", path:"data/applications.json"};
+  (function(){
+    var h = location.hostname, p = location.pathname;
+    if(!/\.github\.io$/.test(h)) return;
+    REPO.owner = h.split(".")[0];
+    var seg = p.split("/").filter(Boolean)[0];
+    REPO.repo = (seg && seg.indexOf(".") < 0) ? seg : h;
+  })();
+
+  /* name, colour, is it over */
+  var STAGES = [
+    ["Applied", "#2D5FA8", false],
+    ["Screening", "#3C7BB8", false],
+    ["Assessment", "#6E63A8", false],
+    ["Interview", "#A8650B", false],
+    ["Final", "#8A5309", false],
+    ["Offer", "#2C6B4F", false],
+    ["Accepted", "#1E7A4D", true],
+    ["Declined", "#66748A", true],
+    ["Withdrawn", "#94A0B2", true],
+    ["No response", "#AEB8C6", true],
+    ["Rejected", "#A8402B", true]
+  ];
+  var COLOUR = {}, TERMINAL = {}, ORDER = {};
+  STAGES.forEach(function(s, i){ COLOUR[s[0]] = s[1]; TERMINAL[s[0]] = s[2]; ORDER[s[0]] = i; });
+  var FIRST = STAGES[0][0];
+
+  var KEY = "job-tracker-v1";
+  var TOKKEY = "job-tracker-gh-token";
+
+  function ls(k){ try{ return window.localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k, v){ try{ window.localStorage.setItem(k, v); }catch(e){} }
+  function lsDel(k){ try{ window.localStorage.removeItem(k); }catch(e){} }
+
+  /* The browser copy is a cache and a safety net, never the record. */
+  var cache = {apps:[], dirty:false, pushedAt:0, pushedJson:""};
+  try{ var raw = ls(KEY); if(raw) cache = JSON.parse(raw) || cache; }catch(e){}
+  if(!cache || typeof cache !== "object") cache = {apps:[], dirty:false};
+  if(!cache.apps) cache.apps = [];
+
+  var apps = cache.apps;
+  var token = ls(TOKKEY) || "";
+  var pushTimer = null;
+  var filter = "all", query = "", open = {};
+
+  function el(id){ return document.getElementById(id); }
+  function today(){ return new Date().toISOString().slice(0, 10); }
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+  /* ---- the shape of one application -------------------------------------
+     `path` is the whole journey, not just where it ended, because the flow
+     diagram is drawn from journeys. A row that only knew its current stage
+     could not tell an offer that came after two interviews from one that
+     arrived out of nowhere. */
+  function tidy(a){
+    a.id = a.id || uid();
+    a.company = a.company || "";
+    a.role = a.role || "";
+    a.applied = a.applied || today();
+    a.url = a.url || "";
+    a.location = a.location || "";
+    a.salary = a.salary || "";
+    a.notes = a.notes || "";
+    if(!a.path || !a.path.length) a.path = [{stage:FIRST, date:a.applied}];
+    a.path = a.path.filter(function(p){ return p && COLOUR[p.stage]; });
+    if(!a.path.length) a.path = [{stage:FIRST, date:a.applied}];
+    return a;
+  }
+  function stageOf(a){ return a.path[a.path.length - 1].stage; }
+  function live(a){ return !TERMINAL[stageOf(a)]; }
+  function journey(a){ return a.path.map(function(p){ return p.stage; }); }
+
+  /* ---- storage ---------------------------------------------------------- */
+  function serialise(){
+    return JSON.stringify({
+      note:"Every job applied to. Edited from the Tracker tab of the site; this file is the record.",
+      updated:new Date().toISOString(),
+      applications:apps
+    }, null, 2) + "\n";
+  }
+
+  function keep(){
+    cache.apps = apps;
+    cache.dirty = true;
+    lsSet(KEY, JSON.stringify(cache));
+    status();
+    if(token){
+      clearTimeout(pushTimer);
+      pushTimer = setTimeout(push, 1400);
+    }
+  }
+
+  function b64(str){
+    var bytes = new TextEncoder().encode(str), bin = "";
+    for(var i = 0; i < bytes.length; i += 0x8000){
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    }
+    return btoa(bin);
+  }
+
+  function ghUrl(){
+    return "https://api.github.com/repos/" + REPO.owner + "/" + REPO.repo +
+           "/contents/" + REPO.path;
+  }
+  function ghHead(){
+    return {Accept:"application/vnd.github+json",
+            Authorization:"Bearer " + token,
+            "X-GitHub-Api-Version":"2022-11-28"};
+  }
+
+  var pushing = false, again = false;
+  function push(){
+    if(!token){ status(); return; }
+    if(pushing){ again = true; return; }
+    pushing = true;
+    setStatus("warn", "Saving to GitHub");
+    /* The sha is fetched immediately before every write rather than
+       remembered: it is the only thing standing between two open tabs and a
+       silently lost row. */
+    fetch(ghUrl(), {headers:ghHead(), cache:"no-store"})
+      .then(function(r){ return r.status === 404 ? null : r.json(); })
+      .then(function(meta){
+        var body = {message:"tracker: " + apps.length + " applications",
+                    content:b64(serialise())};
+        if(meta && meta.sha) body.sha = meta.sha;
+        return fetch(ghUrl(), {method:"PUT", headers:ghHead(), body:JSON.stringify(body)});
+      })
+      .then(function(r){
+        if(r.ok) return r.json();
+        return r.json().then(function(e){ throw new Error(e.message || ("HTTP " + r.status)); });
+      })
+      .then(function(){
+        pushing = false;
+        cache.dirty = false;
+        cache.pushedAt = Date.now();
+        cache.pushedJson = JSON.stringify(apps);
+        lsSet(KEY, JSON.stringify(cache));
+        if(again){ again = false; push(); return; }
+        setStatus("ok", "Saved to the repo at " + new Date().toTimeString().slice(0, 5));
+      })
+      .catch(function(err){
+        pushing = false;
+        again = false;
+        var m = String(err && err.message || err);
+        if(/Bad credentials|401/.test(m)) m = "token rejected — check it under Sync setup";
+        else if(/not accessible|403/.test(m)) m = "that token has no Contents write on this repo";
+        setStatus("err", "Not saved: " + m);
+      });
+  }
+
+  function setStatus(kind, text){
+    var s = el("tkStatus");
+    s.className = "tk-status" + (kind ? " " + kind : "");
+    el("tkStatusT").textContent = text;
+  }
+
+  function status(){
+    /* No token is a decision, not a fault, so it does not read as a warning.
+       The browser is then the only copy and Copy JSON is the backup; the page
+       says where it is saving and leaves it there. */
+    if(!token){
+      setStatus("", "Saved in this browser" + (apps.length ? " · " + apps.length + " applications" : ""));
+    }else if(cache.dirty){
+      setStatus("warn", "Unsaved changes");
+    }else{
+      setStatus("ok", "In sync with the repo");
+    }
+  }
+
+  /* Save to GitHub and the link to the file are meaningless without a token,
+     so they are not on screen until there is one. Sync setup is how they come
+     back. */
+  function syncButtons(){
+    el("tkSave").hidden = !token;
+    el("tkOpen").hidden = !token;
+  }
+
+  /* ---- render ----------------------------------------------------------- */
+  var FILTERS = [["all", "All"], ["live", "Live"], ["interview", "Interviewing"],
+                 ["offer", "Offers"], ["closed", "Closed"]];
+
+  function shown(){
+    var q = query.toLowerCase();
+    return apps.filter(function(a){
+      if(q && (a.company + " " + a.role + " " + a.location).toLowerCase().indexOf(q) < 0) return false;
+      var j = journey(a);
+      if(filter === "live") return live(a);
+      if(filter === "closed") return !live(a);
+      if(filter === "interview") return j.indexOf("Interview") >= 0 || j.indexOf("Final") >= 0;
+      if(filter === "offer") return j.indexOf("Offer") >= 0 || j.indexOf("Accepted") >= 0;
+      return true;
+    }).sort(function(x, y){ return String(y.applied).localeCompare(String(x.applied)); });
+  }
+
+  function field(label, key, a, kind){
+    var lab = document.createElement("label");
+    lab.className = "tk-f";
+    var s = document.createElement("span");
+    s.textContent = label;
+    var inp = document.createElement(kind === "area" ? "textarea" : "input");
+    if(kind === "url") inp.type = "url";
+    inp.value = a[key] || "";
+    inp.addEventListener("input", function(){ a[key] = inp.value; keep(); });
+    lab.appendChild(s);
+    lab.appendChild(inp);
+    return lab;
+  }
+
+  function detail(a){
+    var d = document.createElement("div");
+    d.className = "tk-det";
+
+    var fs = document.createElement("div");
+    fs.className = "tk-fields";
+    fs.appendChild(field("Link", "url", a, "url"));
+    fs.appendChild(field("Location", "location", a));
+    fs.appendChild(field("Salary", "salary", a));
+    d.appendChild(fs);
+    d.appendChild(field("Notes", "notes", a, "area"));
+
+    var jr = document.createElement("div");
+    jr.className = "tk-jrn";
+    a.path.forEach(function(p, i){
+      if(i){
+        var ar = document.createElement("span");
+        ar.className = "tk-arrow";
+        ar.textContent = "→";
+        jr.appendChild(ar);
+      }
+      var c = document.createElement("span");
+      c.className = "tk-chip";
+      c.style.borderColor = COLOUR[p.stage];
+      var b = document.createElement("b");
+      b.textContent = p.stage;
+      b.style.color = COLOUR[p.stage];
+      var dt = document.createElement("i");
+      dt.textContent = p.date || "";
+      c.appendChild(b);
+      c.appendChild(dt);
+      if(i){
+        var x = document.createElement("button");
+        x.type = "button";
+        x.textContent = "×";
+        x.title = "Remove this step";
+        x.addEventListener("click", function(){ a.path.splice(i, 1); keep(); draw(); });
+        c.appendChild(x);
+      }
+      jr.appendChild(c);
+    });
+    d.appendChild(jr);
+
+    var ft = document.createElement("div");
+    ft.className = "tk-det-foot";
+    var ref = document.createElement("span");
+    ref.className = "tk-ref";
+    ref.textContent = a.url ? a.url.replace(/^https?:\/\//, "").slice(0, 54) : a.id;
+    var del = document.createElement("button");
+    del.className = "tk-btn danger";
+    del.type = "button";
+    del.textContent = "Delete";
+    del.addEventListener("click", function(){
+      if(!window.confirm("Delete " + (a.company || "this") + " — " + (a.role || "row") + "?")) return;
+      apps = apps.filter(function(x){ return x.id !== a.id; });
+      keep();
+      draw();
+    });
+    ft.appendChild(ref);
+    ft.appendChild(del);
+    d.appendChild(ft);
+    return d;
+  }
+
+  function row(a){
+    var li = document.createElement("li");
+    li.className = "tk-row";
+    li.style.borderLeftColor = COLOUR[stageOf(a)];
+
+    var main = document.createElement("div");
+    main.className = "tk-main";
+
+    [["company", "co", "Company"], ["role", "ro", "Role"]].forEach(function(f){
+      var i = document.createElement("input");
+      i.className = "tk-cell " + f[1];
+      i.value = a[f[0]];
+      i.placeholder = f[2];
+      i.setAttribute("aria-label", f[2]);
+      i.addEventListener("input", function(){ a[f[0]] = i.value; keep(); });
+      main.appendChild(i);
+    });
+
+    var dt = document.createElement("input");
+    dt.type = "date";
+    dt.className = "tk-cell dt";
+    dt.value = a.applied;
+    dt.setAttribute("aria-label", "Date applied");
+    dt.addEventListener("input", function(){
+      a.applied = dt.value;
+      if(a.path[0]) a.path[0].date = dt.value;
+      keep();
+    });
+    main.appendChild(dt);
+
+    var sel = document.createElement("select");
+    sel.className = "tk-stage";
+    sel.setAttribute("aria-label", "Stage");
+    STAGES.forEach(function(s){
+      var o = document.createElement("option");
+      o.value = s[0];
+      o.textContent = s[0];
+      sel.appendChild(o);
+    });
+    sel.value = stageOf(a);
+    sel.style.color = COLOUR[stageOf(a)];
+    sel.addEventListener("change", function(){
+      /* Moving the dropdown records a step; it does not rewrite the last one.
+         The journey is what the diagram is drawn from, so it is kept by
+         default and corrected by hand in the opened row when a step is wrong. */
+      if(sel.value !== stageOf(a)) a.path.push({stage:sel.value, date:today()});
+      keep();
+      draw();
+    });
+    main.appendChild(sel);
+
+    var more = document.createElement("button");
+    more.className = "tk-more";
+    more.type = "button";
+    more.textContent = open[a.id] ? "−" : "+";
+    more.title = "Details";
+    more.setAttribute("aria-expanded", open[a.id] ? "true" : "false");
+    more.addEventListener("click", function(){ open[a.id] = !open[a.id]; draw(); });
+    main.appendChild(more);
+
+    li.appendChild(main);
+    if(open[a.id]) li.appendChild(detail(a));
+    return li;
+  }
+
+  function stat(k, v, cls){
+    var d = document.createElement("div");
+    var a = document.createElement("span");
+    a.className = "tk-stat-k";
+    a.textContent = k;
+    var b = document.createElement("span");
+    b.className = "tk-stat-v" + (cls ? " " + cls : "");
+    b.textContent = v;
+    d.appendChild(a);
+    d.appendChild(b);
+    return d;
+  }
+
+  function counts(){
+    var c = {total:apps.length, live:0, replied:0, interview:0, offer:0};
+    apps.forEach(function(a){
+      var j = journey(a);
+      if(live(a)) c.live++;
+      if(j.length > 1 && j.indexOf("No response") < 0) c.replied++;
+      if(j.indexOf("Interview") >= 0 || j.indexOf("Final") >= 0) c.interview++;
+      if(j.indexOf("Offer") >= 0 || j.indexOf("Accepted") >= 0) c.offer++;
+    });
+    return c;
+  }
+  function pct(n, d){ return d ? Math.round(n / d * 100) + "%" : "—"; }
+
+  function stats(){
+    var c = counts(), s = el("tkStats");
+    s.innerHTML = "";
+    s.appendChild(stat("Applied", c.total));
+    s.appendChild(stat("Live", c.live));
+    s.appendChild(stat("Interviews", c.interview));
+    s.appendChild(stat("Offers", c.offer, c.offer ? "good" : ""));
+    s.appendChild(stat("Reply rate", pct(c.replied, c.total)));
+    el("tkTabAppsN").textContent = c.total ? c.total : "";
+  }
+
+  function draw(){
+    apps.forEach(tidy);
+    var list = el("tkList"), rows = shown();
+    list.innerHTML = "";
+    rows.forEach(function(a){ list.appendChild(row(a)); });
+    el("tkNone").hidden = rows.length > 0;
+    el("tkNone").textContent = apps.length
+      ? "No application matches that filter."
+      : "Nothing here yet. Add the first application above.";
+    stats();
+    flow();
+  }
+
+  /* ---- the flow diagram --------------------------------------------------
+     A node is a stage at a depth, so "Rejected" straight off an application is
+     not the same node as "Rejected" after two interviews. That keeps every
+     ribbon travelling left to right, which is the only thing that makes the
+     picture readable, and it is how these diagrams get read anyway: the column
+     is how far it got. */
+  function graph(){
+    var nodes = {}, links = {};
+    apps.forEach(function(a){
+      var j = journey(a);
+      for(var i = 0; i < j.length; i++){
+        var k = j[i] + "@" + i;
+        if(!nodes[k]) nodes[k] = {key:k, stage:j[i], depth:i, value:0};
+        nodes[k].value++;
+        if(i < j.length - 1){
+          var t = j[i + 1] + "@" + (i + 1), lk = k + ">" + t;
+          if(!links[lk]) links[lk] = {s:k, t:t, v:0};
+          links[lk].v++;
+        }
+      }
+    });
+    return {nodes:nodes, links:links};
+  }
+
+  function svgEl(name, attrs){
+    var e = document.createElementNS("http://www.w3.org/2000/svg", name);
+    Object.keys(attrs || {}).forEach(function(k){ e.setAttribute(k, attrs[k]); });
+    return e;
+  }
+
+  function flow(){
+    var wrap = el("tkFlowWrap"), c = counts(), fs = el("tkFlowStats");
+    wrap.innerHTML = "";
+    fs.innerHTML = "";
+    fs.appendChild(stat("Applied", c.total));
+    fs.appendChild(stat("Reply rate", pct(c.replied, c.total)));
+    fs.appendChild(stat("Interview rate", pct(c.interview, c.total)));
+    fs.appendChild(stat("Offer rate", pct(c.offer, c.total), c.offer ? "good" : ""));
+
+    if(!apps.length){
+      var p = document.createElement("div");
+      p.className = "tk-empty";
+      p.textContent = "The diagram draws itself once there are applications to draw.";
+      wrap.appendChild(p);
+      el("tkFlowNote").textContent = "";
+      return;
+    }
+
+    var g = graph(), byDepth = {}, maxDepth = 0, maxCount = 1;
+    Object.keys(g.nodes).forEach(function(k){
+      var n = g.nodes[k];
+      (byDepth[n.depth] = byDepth[n.depth] || []).push(n);
+      if(n.depth > maxDepth) maxDepth = n.depth;
+    });
+    Object.keys(byDepth).forEach(function(d){
+      byDepth[d].sort(function(a, b){ return ORDER[a.stage] - ORDER[b.stage]; });
+      if(byDepth[d].length > maxCount) maxCount = byDepth[d].length;
+    });
+
+    var NW = 13, GAP = 16, PADL = 8, PADR = 138, PADT = 16, COL = 178;
+    var H = Math.max(240, Math.min(64 * maxCount, 560));
+    var W = PADL + NW + maxDepth * COL + PADR;
+    /* One scale for the whole picture, set by the widest column, so a ribbon
+       is the same thickness wherever it appears. */
+    var scale = (H - GAP * (maxCount - 1)) / c.total;
+
+    var svg = svgEl("svg", {width:W, height:H + PADT * 2,
+                            viewBox:"0 0 " + W + " " + (H + PADT * 2), role:"img"});
+    svg.setAttribute("aria-label", "Where " + c.total + " applications ended up");
+
+    Object.keys(byDepth).forEach(function(d){
+      var col = byDepth[d];
+      var tot = col.reduce(function(s, n){ return s + n.value; }, 0);
+      var y = PADT + (H - (tot * scale + GAP * (col.length - 1))) / 2;
+      col.forEach(function(n){
+        n.x = PADL + n.depth * COL;
+        n.y = y;
+        n.h = Math.max(2, n.value * scale);
+        n.sy = n.y;
+        n.ty = n.y;
+        y += n.h + GAP;
+      });
+    });
+
+    Object.keys(g.links).map(function(k){ return g.links[k]; })
+      .sort(function(a, b){
+        return (g.nodes[a.s].y - g.nodes[b.s].y) ||
+               (ORDER[g.nodes[a.t].stage] - ORDER[g.nodes[b.t].stage]);
+      })
+      .forEach(function(l){
+        var s = g.nodes[l.s], t = g.nodes[l.t], h = Math.max(1, l.v * scale);
+        var y0 = s.sy, y1 = t.ty;
+        s.sy += h;
+        t.ty += h;
+        var x0 = s.x + NW, x1 = t.x, xm = (x0 + x1) / 2;
+        var d = "M" + x0 + "," + y0 +
+                "C" + xm + "," + y0 + " " + xm + "," + y1 + " " + x1 + "," + y1 +
+                "L" + x1 + "," + (y1 + h) +
+                "C" + xm + "," + (y1 + h) + " " + xm + "," + (y0 + h) + " " + x0 + "," + (y0 + h) + "Z";
+        var path = svgEl("path", {d:d, fill:COLOUR[t.stage], opacity:"0.32"});
+        var ttl = svgEl("title", {});
+        ttl.textContent = s.stage + " → " + t.stage + ": " + l.v;
+        path.appendChild(ttl);
+        svg.appendChild(path);
+      });
+
+    Object.keys(g.nodes).forEach(function(k){
+      var n = g.nodes[k];
+      var r = svgEl("rect", {x:n.x, y:n.y, width:NW, height:n.h, rx:2, fill:COLOUR[n.stage]});
+      var ttl = svgEl("title", {});
+      ttl.textContent = n.stage + ": " + n.value;
+      r.appendChild(ttl);
+      svg.appendChild(r);
+
+      var lab = svgEl("text", {x:n.x + NW + 8, y:n.y + n.h / 2 - 5, "class":"tk-nlab"});
+      lab.setAttribute("dominant-baseline", "middle");
+      lab.textContent = n.stage;
+      svg.appendChild(lab);
+
+      var val = svgEl("text", {x:n.x + NW + 8, y:n.y + n.h / 2 + 9, "class":"tk-nval"});
+      val.setAttribute("dominant-baseline", "middle");
+      val.textContent = n.value + (n.depth ? "  ·  " + pct(n.value, c.total) : "");
+      svg.appendChild(val);
+    });
+
+    wrap.appendChild(svg);
+    el("tkFlowNote").textContent =
+      "Each column is how far an application got, so a stage that appears more than once is " +
+      "the same outcome reached from a different depth — rejected after a final interview " +
+      "is not the same story as rejected without a reply. Hover a ribbon for its count.";
+  }
+
+  function sankeymatic(){
+    var g = graph(), out = [];
+    Object.keys(g.links).forEach(function(k){
+      var l = g.links[k];
+      out.push(g.nodes[l.s].stage + " [" + l.v + "] " + g.nodes[l.t].stage);
+    });
+    return out.join("\n");
+  }
+
+  function copy(text, btn){
+    var was = btn.textContent;
+    function done(ok){
+      btn.textContent = ok ? "Copied" : "Copy failed";
+      setTimeout(function(){ btn.textContent = was; }, 1600);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ done(true); }, function(){ done(false); });
+      return;
+    }
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try{ document.execCommand("copy"); done(true); }catch(e){ done(false); }
+    document.body.removeChild(ta);
+  }
+
+  /* ---- the three views --------------------------------------------------- */
+  var TABS = [
+    ["tkTabApps", "tkPanelApps", "",
+     "Every job applied to. Type straight into the table — it saves as you go."],
+    ["tkTabFlow", "tkPanelFlow", "#flow",
+     "Where those applications ended up, drawn from the stage history of each one."],
+    ["tkTabLog", "tkPanelLog", "#log",
+     "Working toward junior business analyst, data analyst and QA roles. Estimated time against actual, tracked as I go."]
+  ];
+  function tab(id){
+    TABS.forEach(function(t){
+      var on = t[0] === id;
+      el(t[0]).classList.toggle("on", on);
+      if(on) el(t[0]).setAttribute("aria-current", "page");
+      else el(t[0]).removeAttribute("aria-current");
+      el(t[1]).hidden = !on;
+      if(on){
+        el("lgSub").textContent = t[3];
+        try{ history.replaceState(null, "", t[2] || location.pathname); }catch(e){}
+      }
+    });
+    if(id === "tkTabFlow") flow();
+  }
+  TABS.forEach(function(t){ el(t[0]).addEventListener("click", function(){ tab(t[0]); }); });
+
+  /* ---- wiring ------------------------------------------------------------ */
+  el("tkDate").value = today();
+  el("tkAdd").addEventListener("submit", function(e){
+    e.preventDefault();
+    var co = el("tkCompany").value.trim(), ro = el("tkRole").value.trim();
+    if(!co && !ro) return;
+    var d = el("tkDate").value || today();
+    apps.push(tidy({id:uid(), company:co, role:ro, applied:d, path:[{stage:FIRST, date:d}]}));
+    el("tkCompany").value = "";
+    el("tkRole").value = "";
+    el("tkCompany").focus();
+    keep();
+    draw();
+  });
+
+  var fbox = el("tkFilters");
+  FILTERS.forEach(function(f){
+    var b = document.createElement("button");
+    b.className = "tk-fil" + (f[0] === "all" ? " on" : "");
+    b.type = "button";
+    b.textContent = f[1];
+    b.addEventListener("click", function(){
+      filter = f[0];
+      Array.prototype.forEach.call(fbox.children, function(x){ x.classList.remove("on"); });
+      b.classList.add("on");
+      draw();
+    });
+    fbox.appendChild(b);
+  });
+  el("tkSearch").addEventListener("input", function(){ query = this.value.trim(); draw(); });
+
+  el("tkSave").addEventListener("click", function(){
+    if(!token){
+      el("tkSyncPanel").hidden = false;
+      el("tkToken").focus();
+      return;
+    }
+    clearTimeout(pushTimer);
+    push();
+  });
+  el("tkCopy").addEventListener("click", function(){ copy(serialise(), this); });
+  el("tkCopyFlow").addEventListener("click", function(){ copy(sankeymatic(), this); });
+  el("tkSyncBtn").addEventListener("click", function(){
+    var p = el("tkSyncPanel");
+    p.hidden = !p.hidden;
+  });
+  el("tkTokSave").addEventListener("click", function(){
+    var v = el("tkToken").value.trim();
+    if(!v) return;
+    token = v;
+    lsSet(TOKKEY, v);
+    el("tkToken").value = "";
+    el("tkSyncPanel").hidden = true;
+    syncButtons();
+    push();
+  });
+  el("tkTokClear").addEventListener("click", function(){
+    token = "";
+    lsDel(TOKKEY);
+    el("tkToken").value = "";
+    syncButtons();
+    status();
+  });
+
+  el("tkPathLbl").textContent = REPO.path;
+  el("tkRepoLbl").textContent = REPO.owner + "/" + REPO.repo;
+  /* HEAD rather than a branch name: this has to work whether the repo is on
+     main or on master, and the build has no way to know which. */
+  el("tkOpen").href = "https://github.com/" + REPO.owner + "/" + REPO.repo +
+                      "/blob/HEAD/" + REPO.path;
+
+  /* ---- first load --------------------------------------------------------
+     The published file wins unless this browser is holding edits that have not
+     reached the repo. Pages can take a minute to republish after a save, so a
+     copy that was just pushed is trusted over a remote one still catching up —
+     otherwise a reload in that minute would show the row disappearing. */
+  draw();
+  syncButtons();
+  status();
+  if(location.hash === "#flow") tab("tkTabFlow");
+  else if(location.hash === "#log") tab("tkTabLog");
+
+  fetch(REPO.path + "?v=" + Date.now(), {cache:"no-store"})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(remote){
+      if(!remote || !remote.applications) return;
+      var stale = cache.pushedJson &&
+                  JSON.stringify(remote.applications) !== cache.pushedJson &&
+                  (Date.now() - (cache.pushedAt || 0)) < 300000;
+      if(cache.dirty || stale) return;
+      apps = remote.applications.map(tidy);
+      cache.apps = apps;
+      cache.dirty = false;
+      lsSet(KEY, JSON.stringify(cache));
+      draw();
+      status();
+    })
+    .catch(function(){});
+})();
+</script>
+</body>
+</html>
