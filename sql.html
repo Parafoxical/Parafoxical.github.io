@@ -666,6 +666,24 @@ body.testing .entry.qa>h4{display:none}
 /* the answer is the whole card, so neither register may take it away */
 .entry.qa .ans{margin:0}
 
+/* ---------- filtering sheet 20 ----------
+   The glossary's own bar, with sections where it has kinds, so the two places
+   in the pack that narrow a long list narrow it the same way. It reuses
+   .gfilter wholesale; what is new here is the search box, the fourth light
+   and hiding a section that has nothing left in it. */
+.qsearch{width:100%;margin:0 0 12px;padding:11px 14px;font:inherit;font-size:15px;
+ background:var(--card);border:1px solid var(--line);border-radius:5px;color:var(--ink)}
+.qsearch:focus{border-color:var(--blue);outline:none}
+.entry.qa.hide,.block.rv.hide{display:none}
+/* not answered yet is the absence of a mark, so it gets the absence of a
+   colour rather than a fourth one */
+.glights button[data-m=u]{color:var(--ink3)}
+/* in cards mode the sheet is its deck and nothing else, and the blanket in
+   cards.py only reaches the sheet's own children - these are two of them */
+body.mode-cards .sheet>.qsearch,
+body.mode-cards .sheet>.qfilter,
+body.mode-cards .sheet>.gnone{display:none}
+
 .modes button+button{margin-left:1px}
 /* Read mode on a chapter sheet shows prose, which has no plain/technical
    split, so the toggle is inert there and reads as a broken control. It still
@@ -1168,6 +1186,12 @@ body.mode-cards .levels{display:none}
 .cd-lbl{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink3);
  letter-spacing:.09em;text-transform:uppercase}
 .cd-chips{display:flex;gap:4px}
+/* a deck with no topics has no topic row at all, rather than an empty one:
+   `display:flex` would otherwise win over the hidden attribute */
+.cd-chips[hidden],.cd-lbl[hidden]{display:none}
+/* eleven topics is wider than the settings row, so that row wraps on its own
+   line instead of pushing How many and Draw from apart */
+.cd-topics{flex-wrap:wrap;max-width:100%}
 .cd-chips button{font-family:"IBM Plex Mono",monospace;font-size:11px;
  background:var(--paper);color:var(--ink3);border:1px solid var(--line);
  border-radius:999px;padding:4px 11px;cursor:pointer}
